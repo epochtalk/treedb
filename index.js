@@ -3,6 +3,7 @@ module.exports = TreeDB;
 var sublevel = require('level-sublevel/bytewise');
 var bytewise = require('bytewise');
 var readonly = require('read-only-stream');
+var defined = require('defined');
 
 function noop() {};
 
@@ -15,8 +16,8 @@ function TreeDB(db, opts) {
 
 TreeDB.prototype.nodes = function(key) {
   var opts = {
-    gt: [ 'nodes', defined(key, null), null ],
-    lt: [ 'nodes', key, undefined ]
+    gt: [ 'node', defined(key, null)],
+    lt: [ 'node', undefined]
   };
   return readonly(this.db.createReadStream(opts));
 };
