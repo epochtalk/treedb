@@ -4,9 +4,9 @@ var TreeDB = require('./index');
 newDb = levelup('./.tdb');
 var tree = new TreeDB(newDb);
 db = tree.db;
-db.put(['node', 1234], 'LevelUP', function (err) {
+db.put('testkey', 'LevelUP', function (err) {
   if (err) return console.log(err);
-  db.get(['node', 1234], function (err, value) {
+  db.get('testkey', function (err, value) {
     if (err) return console.log(err);
     console.log('name=' + value);
   });
@@ -22,5 +22,5 @@ var ops = [
 db.batch(ops, function (err) {
   if (err) return console.log('Ooops!', err)
   console.log('Great success dear leader!');
-  tree.nodes(null).on('data', console.log);
+  tree.nodes(2000).on('data', console.log);
 });

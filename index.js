@@ -16,7 +16,7 @@ function TreeDB(db, opts) {
 
 TreeDB.prototype.nodes = function(key) {
   var opts = {
-    gt: [ 'node', defined(key, null)],
+    gte: [ 'node', defined(key, null)],
     lt: [ 'node', undefined]
   };
   return readonly(this.db.createReadStream(opts));
