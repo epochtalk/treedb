@@ -11,6 +11,7 @@
     "bytewise": "^0.7.1",
     "level-sublevel": "^6.3.13",
     "leveldown": "^0.10.0",
-    "levelup": "^0.19.0"
+    "levelup": "^0.19.0",
+    "read-only-stream": "^1.1.1"
   }
 }
