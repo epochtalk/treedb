@@ -11,6 +11,7 @@ function TreeDB(db, opts) {
   if (!(this instanceof TreeDB)) return new TreeDB(db, opts);
   if (!opts) opts = {};
   this.db = sublevel(db, {keyEncoding: bytewise, valueEncoding: 'json'});
+  this.types = [];
 };
 
 
@@ -21,3 +22,17 @@ TreeDB.prototype.nodes = function(key) {
   };
   return readonly(this.db.createReadStream(opts));
 };
+
+TreeDB.prototype.registerType = function(name, opts, cb) {
+  var self = this;
+  var rows = [];
+  var typeKey = ['type', name];
+  rows.push({type: 'put', key: typeKey, value: 0});
+  commit();
+  function commit() {
+    self.db.batch(rows, function(err) {
+      cb(err, typeKey);
+    });
+  };
+};
+

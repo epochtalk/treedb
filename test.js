@@ -24,3 +24,8 @@ db.batch(ops, function (err) {
   console.log('Great success dear leader!');
   tree.nodes(2000).on('data', console.log);
 });
+
+tree.registerType('board', {}, function(err, key) {
+  console.log(err);
+  console.log(key);
+});
