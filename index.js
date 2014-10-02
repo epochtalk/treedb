@@ -36,3 +36,12 @@ TreeDB.prototype.registerType = function(name, opts, cb) {
   };
 };
 
+TreeDB.prototype.getTypes = function() {
+  var self = this;
+  var opts = {
+    gt: ['type', null],
+    lt: ['type', undefined]
+  };
+  return self.db.createReadStream(opts);
+};
+

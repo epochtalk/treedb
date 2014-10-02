@@ -26,6 +26,12 @@ db.batch(ops, function (err) {
 });
 
 tree.registerType('board', {}, function(err, key) {
-  console.log(err);
   console.log(key);
+  tree.registerType('thread', {}, function(err, key) {
+    console.log(key);
+    tree.registerType('post', {}, function(err, key) {
+      console.log(key);
+    });
+  });
 });
+
