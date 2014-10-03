@@ -45,11 +45,11 @@ function testRetrieve() {
   var postsRetrieved = 0;
   tree.nodes('post')
   .on('data', function(post) {
-    console.log(post.key[0] + '-' + post.key[1]);
+    process.stdout.write(post.key[1] + ' ');
     postsRetrieved += 1;
   })
   .on('end', function() {
-    console.log(postsRetrieved + ' posts retrieved');
+    console.log('\n' + postsRetrieved + ' posts retrieved');
     return teardown();
   });
 }
