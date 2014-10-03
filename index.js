@@ -53,7 +53,8 @@ TreeDB.prototype.store = function(obj, parentKey, cb) {
     cb = parentKey;
     parentKey = false;
   }
-  if (!parentKey || typeof parentKey !== 'array') parentKey = false;
+  if (!parentKey || typeof parentKey !== 'object') parentKey = false;
+  console.log(typeof parentKey);
 
   var self = this;
   var rows = [];
@@ -67,17 +68,12 @@ TreeDB.prototype.store = function(obj, parentKey, cb) {
     // assumes parent already has been saved in the database
     rels.push({type: 'put', key: parentKey.concat(key), value: 0});
     storeRequests.push(function(cb) {
-      self.tree.batch(rels, function(err) {
-        console.log('stored rels');
-        return cb(err);
-      });
+      self.tree.batch(rels, cb);
     });
   }
 
   storeRequests.push(function(cb) {
-    self.db.batch(rows, function(err) {
-      return cb(err);
-    });
+    self.db.batch(rows, cb);
   });
 
   commit();
@@ -98,8 +94,8 @@ TreeDB.prototype.nodes = function(type, opts) {
 
 TreeDB.prototype.children = function(key, opts) {
   var query = {
-    gte: ['tree', defined(key, null)],
-    lt: ['tree', undefined]
+    gte: key.concat(null),
+    lt: key.concat(undefined)
   };
   return readonly(this.tree.createReadStream(query));
 };

@@ -1,30 +1,21 @@
 var levelup = require('levelup');
 var TreeDB = require('../');
-var rimraf = require('rimraf');
-var faker = require('faker');
 var async = require('async');
+var path = require('path');
+var helper = require(path.join(__dirname, 'helper'));
 
 var newDb = levelup('./.tdb');
 var tree = new TreeDB(newDb);
 var db = tree.db;
 
 function noop() {};
-function genPost() {
-  var post = {
-    type: 'post',
-    title: faker.hacker.adjective() + ' ' + faker.hacker.noun(),
-    body: faker.lorem.paragraph(),
-    created_at: Date.now()
-  };
-  return post;
-};
 
 function testStore(postsCount) {
   console.log('store test.');
   var posts = [];
   var postStoreRequests = [];
   for (var i = 0; i < postsCount; i++) {
-    var post = genPost();
+    var post = helper.genPost();
     posts.push(post);
     postStoreRequests.push(function(cb) {
       tree.store(post, function(err, key) {
@@ -50,15 +41,9 @@ function testRetrieve() {
   })
   .on('end', function() {
     console.log('\n' + postsRetrieved + ' posts retrieved');
-    return teardown();
+    return helper.teardown();
   });
 }
-
-function teardown() {
-  rimraf('./.tdb', function(error){
-    console.log('teardown: removed ./.tdb.');
-  });
-};
 
 testStore(100);
 
