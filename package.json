@@ -19,6 +19,7 @@
     "shortid": "^2.0.1"
   },
   "devDependencies": {
+    "faker": "^2.0.1",
     "rimraf": "^2.2.8"
   }
 }

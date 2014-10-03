@@ -17,11 +17,11 @@ function TreeDB(db, opts) {
 
 
 TreeDB.prototype.nodes = function(key) {
-  var opts = {
+  var query = {
     gte: [ 'node', defined(key, null)],
     lt: [ 'node', undefined]
   };
-  return readonly(this.db.createReadStream(opts));
+  return readonly(this.db.createReadStream(query));
 };
 
 TreeDB.prototype.registerType = function(name, opts, cb) {
@@ -40,18 +40,18 @@ TreeDB.prototype.registerType = function(name, opts, cb) {
 
 TreeDB.prototype.getTypes = function() {
   var self = this;
-  var opts = {
+  var query = {
     gt: ['type', null],
     lt: ['type', undefined]
   };
-  return self.db.createReadStream(opts);
+  return self.db.createReadStream(query);
 };
 
-TreeDB.prototype.store = function(type, obj, cb) {
+TreeDB.prototype.store = function(obj, cb) {
   var self = this;
   var rows = [];
   var hash = keys.hash();
-  var key = [type, hash];
+  var key = [obj.type, hash];
   rows.push({type: 'put', key: key, value: obj});
   commit();
   function commit() {
@@ -59,5 +59,21 @@ TreeDB.prototype.store = function(type, obj, cb) {
       cb(err, key);
     });
   };
+};
+
+TreeDB.prototype.nodes = function(type, opts) {
+  var query = {
+    gte: [type, null],
+    lt: [type, undefined]
+  };
+  return readonly(this.db.createReadStream(query));
+};
+
+TreeDB.prototype.children = function(key, opts) {
+  var query = {
+    gte: ['tree', defined(key, null)],
+    lt: ['tree', undefined]
+  };
+  return readonly(this.db.createReadStream(query));
 };
 
