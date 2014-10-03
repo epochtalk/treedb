@@ -35,3 +35,6 @@ tree.registerType('board', {}, function(err, key) {
   });
 });
 
+var crypto = require('crypto');
+var shasum = crypto.createHash('sha256');
+
