@@ -27,6 +27,7 @@ TreeDB.prototype.registerType = function(name, opts, cb) {
   var self = this;
   var rows = [];
   var typeKey = ['type', name];
+
   rows.push({type: 'put', key: typeKey, value: 0});
   commit();
   function commit() {
@@ -45,3 +46,4 @@ TreeDB.prototype.getTypes = function() {
   return self.db.createReadStream(opts);
 };
 
+// TreeDB.prototype.store = function(type, obj, 

@@ -6,9 +6,9 @@ var keys = require('../keys');
 
 function testHash() {
   console.log('random keys');
-  console.log(keys.newHash());
-  console.log(keys.newHash());
-  console.log(keys.newHash());
+  for (var i = 0; i < 10; i++) {
+    console.log(keys.hash());
+  }
 }
 
 testHash();
