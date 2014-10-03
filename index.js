@@ -1,9 +1,10 @@
 module.exports = TreeDB;
-
+var path = require('path');
 var sublevel = require('level-sublevel/bytewise');
 var bytewise = require('bytewise');
 var readonly = require('read-only-stream');
 var defined = require('defined');
+var keys = require(path.join(__dirname, 'keys'));
 
 function noop() {};
 
@@ -46,4 +47,17 @@ TreeDB.prototype.getTypes = function() {
   return self.db.createReadStream(opts);
 };
 
-// TreeDB.prototype.store = function(type, obj, 
+TreeDB.prototype.store = function(type, obj, cb) {
+  var self = this;
+  var rows = [];
+  var hash = keys.hash();
+  var key = [type, hash];
+  rows.push({type: 'put', key: key, value: obj});
+  commit();
+  function commit() {
+    self.db.batch(rows, function(err) {
+      cb(err, key);
+    });
+  };
+};
+
