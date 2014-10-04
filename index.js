@@ -1,6 +1,7 @@
 module.exports = TreeDB;
 var path = require('path');
 var sublevel = require('level-sublevel/bytewise');
+var trigger = require('level-trigger');
 var bytewise = require('bytewise');
 var readonly = require('read-only-stream');
 var defined = require('defined');
@@ -14,6 +15,17 @@ function TreeDB(db, opts) {
   if (!opts) opts = {};
   this.db = sublevel(db, {keyEncoding: bytewise, valueEncoding: 'json'});
   this.tree = this.db.sublevel('tree');
+
+  var trigDb = trigger(this.db, 'trigger', function (ch) {
+    //optionally index the job with a different key.
+    //if there are two jobs with the same key,
+    //it will only be triggered once.
+    return ch.key
+  },
+  function (value, done) { 
+    //call done when job is done.
+    done();
+  });
   this.types = [];
 };
 
