@@ -16,13 +16,14 @@ function TreeDB(db, opts) {
   this.db = sublevel(db, {keyEncoding: bytewise, valueEncoding: 'json'});
   this.tree = this.db.sublevel('tree');
 
-  var trigDb = trigger(this.db, 'trigger', function (ch) {
-    //optionally index the job with a different key.
-    //if there are two jobs with the same key,
-    //it will only be triggered once.
+  var trigDb = trigger(this.db, 'index-trigger', function (ch) {
+    console.log('ch');
+    console.log(ch);
     return ch.key
   },
   function (value, done) { 
+    console.log('value');
+    console.log(value);
     //call done when job is done.
     done();
   });
@@ -35,29 +36,6 @@ TreeDB.prototype.nodes = function(key) {
     lt: [ 'node', undefined]
   };
   return readonly(this.db.createReadStream(query));
-};
-
-TreeDB.prototype.registerType = function(name, opts, cb) {
-  var self = this;
-  var rows = [];
-  var typeKey = ['type', name];
-
-  rows.push({type: 'put', key: typeKey, value: 0});
-  commit();
-  function commit() {
-    self.db.batch(rows, function(err) {
-      cb(err, typeKey);
-    });
-  };
-};
-
-TreeDB.prototype.getTypes = function() {
-  var self = this;
-  var query = {
-    gt: ['type', null],
-    lt: ['type', undefined]
-  };
-  return self.db.createReadStream(query);
 };
 
 TreeDB.prototype.store = function(obj, parentKey, cb) {
