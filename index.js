@@ -81,39 +81,11 @@ TreeDB.prototype.children = function(key, opts) {
 };
 
 TreeDB.prototype.addIndex = function(type, field, cb) {
-  if (!cb) cb = noop;
-  var self = this;
-  var rows = [];
-  var key = ['pri', type, 'index', field];
-  rows.push({type: 'put', key: key, value: 0});
-  var storeRequests = [];
-  storeRequests.push(function(cb) {
-    self.indexes.batch(rows, cb);
-  });
-  commit();
-  function commit() {
-    async.parallel(storeRequests, function(err) {
-      cb(err, key);
-    });
-  };
+  this.indexer.addIndex(type, field, cb);
 };
 
 TreeDB.prototype.addSecondaryIndex = function(type, parentType, field, cb) {
-  if (!cb) cb = noop;
-  var self = this;
-  var rows = [];
-  var key = ['sec', type, parentType, 'index', field];
-  rows.push({type: 'put', key: key, value: 0});
-  var storeRequests = [];
-  storeRequests.push(function(cb) {
-    self.indexes.batch(rows, cb);
-  });
-  commit();
-  function commit() {
-    async.parallel(storeRequests, function(err) {
-      cb(err, key);
-    });
-  };
+  this.indexer.addSecondaryIndex(type, parentType, field, cb);
 };
 
 function noop(){};

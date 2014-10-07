@@ -1,5 +1,6 @@
 module.exports = TreeDBIndexer;
 var trigger = require('level-trigger');
+var async = require('async');
 
 function TreeDBIndexer(treeDB) {
   if (!(this instanceof TreeDBIndexer)) return new TreeDBIndexer(treeDB);
@@ -20,7 +21,42 @@ function TreeDBIndexer(treeDB) {
     // fix for callback of put index
     done();
   });
-  return trig;
+};
+
+TreeDBIndexer.prototype.addIndex = function(type, field, cb) {
+  if (!cb) cb = noop;
+  var self = this;
+  var rows = [];
+  var key = ['pri', type, 'index', field];
+  rows.push({type: 'put', key: key, value: 0});
+  var storeRequests = [];
+  storeRequests.push(function(cb) {
+    self.indexesDB.batch(rows, cb);
+  });
+  commit();
+  function commit() {
+    async.parallel(storeRequests, function(err) {
+      cb(err, key);
+    });
+  };
+};
+
+TreeDBIndexer.prototype.addSecondaryIndex = function(type, parentType, field, cb) {
+  if (!cb) cb = noop;
+  var self = this;
+  var rows = [];
+  var key = ['sec', type, parentType, 'index', field];
+  rows.push({type: 'put', key: key, value: 0});
+  var storeRequests = [];
+  storeRequests.push(function(cb) {
+    self.indexesDB.batch(rows, cb);
+  });
+  commit();
+  function commit() {
+    async.parallel(storeRequests, function(err) {
+      cb(err, key);
+    });
+  };
 };
 
 TreeDBIndexer.prototype.delIndexes = function(key) {
@@ -67,3 +103,4 @@ TreeDBIndexer.prototype.indexesOf = function(key) {
   }
 }
 
+function noop(){};
