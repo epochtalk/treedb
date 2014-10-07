@@ -7,6 +7,7 @@ var helper = require(path.join(__dirname, 'helper'));
 var newDb = levelup('./.tdb');
 var tree = new TreeDB(newDb);
 var db = tree.db;
+tree.addIndex('board', 'created_at');
 
 function noop() {};
 
@@ -73,7 +74,7 @@ function retrieveThreads(boardKeys) {
     retrieveThreadsRequests.push(function(cb) {
       tree.children(boardKey)
       .on('data', function(chunk) {
-        console.log(chunk.key);
+        // console.log(chunk.key);
       })
       .on('end', function() {
         return cb();
@@ -82,6 +83,18 @@ function retrieveThreads(boardKeys) {
   });
   async.series(retrieveThreadsRequests, function(err) {
     console.log('done');
+    retrieveBoardIndexes();
+  });
+}
+
+function retrieveBoardIndexes() {
+  console.log('trying indexes');
+  tree.nodes('board', { indexedField: 'created_at' })
+  .on('data', function(index) {
+    console.log('index');
+    console.log(index);
+  })
+  .on('end', function() {
     helper.teardown();
   });
 }

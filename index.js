@@ -5,7 +5,7 @@ var bytewise = require('bytewise');
 var readonly = require('read-only-stream');
 var defined = require('defined');
 var async = require('async');
-var indexTrigger = require(path.join(__dirname, 'index-trigger'));
+var indexer = require(path.join(__dirname, 'indexer'));
 var keys = require(path.join(__dirname, 'keys'));
 
 function TreeDB(db, opts) {
@@ -14,7 +14,8 @@ function TreeDB(db, opts) {
   this.db = sublevel(db, {keyEncoding: bytewise, valueEncoding: 'json'});
   this.tree = this.db.sublevel('tree');
   this.indexes = this.db.sublevel('indexes');
-  this.indexTrigger = indexTrigger(this.db);
+  this.indexed = this.db.sublevel('indexed');
+  this.indexer = indexer(this.db);
 };
 
 TreeDB.prototype.store = function(obj, parentKey, cb) {
@@ -52,11 +53,23 @@ TreeDB.prototype.store = function(obj, parentKey, cb) {
 };
 
 TreeDB.prototype.nodes = function(type, opts) {
-  var query = {
-    gt: [type, null],
-    lt: [type, undefined]
-  };
-  return readonly(this.db.createReadStream(query));
+  console.log('opts');
+  console.log(opts);
+  var query;
+  if (opts && opts.indexedField) {
+    query = {
+      gt: ['pri', type, 'index', opts.indexedField, null],
+      lt: ['pri', type, 'index', opts.indexedField, undefined]
+    }
+    return readonly(this.indexed.createReadStream(query));
+  }
+  else {
+    query = {
+      gt: [type, null],
+      lt: [type, undefined]
+    };
+    return readonly(this.db.createReadStream(query));
+  }
 };
 
 TreeDB.prototype.children = function(key, opts) {
@@ -68,6 +81,7 @@ TreeDB.prototype.children = function(key, opts) {
 };
 
 TreeDB.prototype.addIndex = function(type, field, cb) {
+  if (!cb) cb = noop;
   var self = this;
   var rows = [];
   var key = ['pri', type, 'index', field];
@@ -85,6 +99,7 @@ TreeDB.prototype.addIndex = function(type, field, cb) {
 };
 
 TreeDB.prototype.addSecondaryIndex = function(type, parentType, field, cb) {
+  if (!cb) cb = noop;
   var self = this;
   var rows = [];
   var key = ['sec', type, parentType, 'index', field];
@@ -100,4 +115,6 @@ TreeDB.prototype.addSecondaryIndex = function(type, parentType, field, cb) {
     });
   };
 };
+
+function noop(){};
 
