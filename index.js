@@ -53,7 +53,7 @@ TreeDB.prototype.store = function(obj, parentKey, cb) {
 
 TreeDB.prototype.nodes = function(type, opts) {
   var query = {
-    gte: [type, null],
+    gt: [type, null],
     lt: [type, undefined]
   };
   return readonly(this.db.createReadStream(query));
@@ -61,7 +61,7 @@ TreeDB.prototype.nodes = function(type, opts) {
 
 TreeDB.prototype.children = function(key, opts) {
   var query = {
-    gte: key.concat(null),
+    gt: key.concat(null),
     lt: key.concat(undefined)
   };
   return readonly(this.tree.createReadStream(query));
@@ -70,7 +70,7 @@ TreeDB.prototype.children = function(key, opts) {
 TreeDB.prototype.addIndex = function(type, field, cb) {
   var self = this;
   var rows = [];
-  var key = [type, 'index', field];
+  var key = ['pri', type, 'index', field];
   rows.push({type: 'put', key: key, value: 0});
   var storeRequests = [];
   storeRequests.push(function(cb) {
@@ -82,12 +82,12 @@ TreeDB.prototype.addIndex = function(type, field, cb) {
       cb(err, key);
     });
   };
-}
+};
 
 TreeDB.prototype.addSecondaryIndex = function(type, parentType, field, cb) {
   var self = this;
   var rows = [];
-  var key = ['secondary', type, parentType, 'index', field];
+  var key = ['sec', type, parentType, 'index', field];
   rows.push({type: 'put', key: key, value: 0});
   var storeRequests = [];
   storeRequests.push(function(cb) {
@@ -99,4 +99,5 @@ TreeDB.prototype.addSecondaryIndex = function(type, parentType, field, cb) {
       cb(err, key);
     });
   };
-}
+};
+
