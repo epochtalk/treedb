@@ -78,8 +78,6 @@ TreeDBIndexer.prototype.putIndexes = function(ch, cb) {
   })
   .on('end', function() {
     self.indexedDB.batch(rows, function(err) {
-      console.log('batched indexes in indexedDB.');
-      console.log(rows);
       if (cb) return cb();
     });
   });
