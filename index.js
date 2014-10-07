@@ -1,41 +1,20 @@
 module.exports = TreeDB;
 var path = require('path');
 var sublevel = require('level-sublevel/bytewise');
-var trigger = require('level-trigger');
 var bytewise = require('bytewise');
 var readonly = require('read-only-stream');
 var defined = require('defined');
 var async = require('async');
+var indexTrigger = require(path.join(__dirname, 'index-trigger'));
 var keys = require(path.join(__dirname, 'keys'));
-
-function noop() {};
 
 function TreeDB(db, opts) {
   if (!(this instanceof TreeDB)) return new TreeDB(db, opts);
   if (!opts) opts = {};
   this.db = sublevel(db, {keyEncoding: bytewise, valueEncoding: 'json'});
   this.tree = this.db.sublevel('tree');
-
-  var trigDb = trigger(this.db, 'index-trigger', function (ch) {
-    console.log('ch');
-    console.log(ch);
-    return ch.key
-  },
-  function (value, done) { 
-    console.log('value');
-    console.log(value);
-    //call done when job is done.
-    done();
-  });
-  this.types = [];
-};
-
-TreeDB.prototype.nodes = function(key) {
-  var query = {
-    gte: [ 'node', defined(key, null)],
-    lt: [ 'node', undefined]
-  };
-  return readonly(this.db.createReadStream(query));
+  this.indexes = this.db.sublevel('indexes');
+  this.indexTrigger = indexTrigger(this.db);
 };
 
 TreeDB.prototype.store = function(obj, parentKey, cb) {
@@ -88,3 +67,36 @@ TreeDB.prototype.children = function(key, opts) {
   return readonly(this.tree.createReadStream(query));
 };
 
+TreeDB.prototype.addIndex = function(type, field, cb) {
+  var self = this;
+  var rows = [];
+  var key = [type, 'index', field];
+  rows.push({type: 'put', key: key, value: 0});
+  var storeRequests = [];
+  storeRequests.push(function(cb) {
+    self.db.batch(rows, cb);
+  });
+  commit();
+  function commit() {
+    async.parallel(storeRequests, function(err) {
+      cb(err, key);
+    });
+  };
+}
+
+TreeDB.prototype.addSecondaryIndex = function(type, parentType, field, cb) {
+  var self = this;
+  var rows = [];
+  var key = ['secondary', type, parentType, 'index', field];
+  rows.push({type: 'put', key: key, value: 0});
+  var storeRequests = [];
+  storeRequests.push(function(cb) {
+    self.db.batch(rows, cb);
+  });
+  commit();
+  function commit() {
+    async.parallel(storeRequests, function(err) {
+      cb(err, key);
+    });
+  };
+}
