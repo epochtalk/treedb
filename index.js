@@ -53,8 +53,6 @@ TreeDB.prototype.store = function(obj, parentKey, cb) {
 };
 
 TreeDB.prototype.nodes = function(type, opts) {
-  console.log('opts');
-  console.log(opts);
   var query;
   if (opts && opts.indexedField) {
     query = {
