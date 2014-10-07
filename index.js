@@ -5,7 +5,7 @@ var bytewise = require('bytewise');
 var readonly = require('read-only-stream');
 var defined = require('defined');
 var async = require('async');
-var indexer = require(path.join(__dirname, 'indexer'));
+var TreeDBIndexer = require(path.join(__dirname, 'indexer'));
 var keys = require(path.join(__dirname, 'keys'));
 
 function TreeDB(db, opts) {
@@ -15,7 +15,7 @@ function TreeDB(db, opts) {
   this.tree = this.db.sublevel('tree');
   this.indexes = this.db.sublevel('indexes');
   this.indexed = this.db.sublevel('indexed');
-  this.indexer = indexer(this.db);
+  this.indexer = new TreeDBIndexer(this.db);
 };
 
 TreeDB.prototype.store = function(obj, parentKey, cb) {
