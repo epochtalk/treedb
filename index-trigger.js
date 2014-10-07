@@ -1,6 +1,7 @@
 var trigger = require('level-trigger');
 
 module.exports = function(db) {
+  var indexes = db.sublevel('indexes');
   var trig = trigger(db, 'index-trigger', function (ch) {
     console.log('ch');
     console.log(ch);

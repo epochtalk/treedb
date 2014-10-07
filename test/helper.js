@@ -19,7 +19,7 @@ exp.genBoard = function() {
 exp.genThread = function() {
   var thread = {
     type: 'thread',
-    subject: faker.hacker.adjective() + ' ' + faker.hacker.adjective + ' ' + faker.hacker.noun(),
+    subject: faker.hacker.adjective() + ' ' + faker.hacker.adjective() + ' ' + faker.hacker.noun(),
     created_at: faker.date.recent().getTime()
   };
   return thread;

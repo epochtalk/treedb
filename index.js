@@ -74,7 +74,7 @@ TreeDB.prototype.addIndex = function(type, field, cb) {
   rows.push({type: 'put', key: key, value: 0});
   var storeRequests = [];
   storeRequests.push(function(cb) {
-    self.db.batch(rows, cb);
+    self.indexes.batch(rows, cb);
   });
   commit();
   function commit() {
@@ -91,7 +91,7 @@ TreeDB.prototype.addSecondaryIndex = function(type, parentType, field, cb) {
   rows.push({type: 'put', key: key, value: 0});
   var storeRequests = [];
   storeRequests.push(function(cb) {
-    self.db.batch(rows, cb);
+    self.indexes.batch(rows, cb);
   });
   commit();
   function commit() {
