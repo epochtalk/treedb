@@ -19,3 +19,4 @@ node_modules
 test/coverage/
 
 /.tdb
+/test/.tdb

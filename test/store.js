@@ -7,8 +7,18 @@ var db = new levelup(path.join(__dirname, '.tdb'));
 var helper = require(path.join(__dirname, 'helper'));
 var tree = new TreeDB(db);
 
-test('store boards', function(t) {
+test('store', function(t) {
   var count = 10;
+  store(count, function(err) {
+    if (!err) {
+      console.log('stored ' + count + ' boards with ' + count + ' threads each');
+    }
+    // return retrieveBoards();
+    t.end();
+  });
+});
+
+function store(count, cb) {
   var boards = [];
   var storeRequests = [];
   for (var i = 0; i < count; i++) {
@@ -20,14 +30,8 @@ test('store boards', function(t) {
       });
     });
   }
-  async.parallel(storeRequests, function(err) {
-    if (!err) {
-      console.log('stored ' + count + ' boards with ' + count + ' threads each');
-    }
-    // return retrieveBoards();
-    t.end();
-  });
-});
+  async.parallel(storeRequests, cb);
+};
 
 function storeThreads(boardKey, count, cb) {
   var threads = [];
