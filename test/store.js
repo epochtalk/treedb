@@ -8,8 +8,8 @@ var helper = require(path.join(__dirname, 'helper'));
 var tree = new TreeDB(db);
 
 test('store', function(t) {
-  var count = 10;
-  store(count, function(err) {
+  var count = 3;
+  storeBoards(count, function(err) {
     if (!err) {
       console.log('stored ' + count + ' boards with ' + count + ' threads each');
     }
@@ -18,7 +18,7 @@ test('store', function(t) {
   });
 });
 
-function store(count, cb) {
+function storeBoards(count, cb) {
   var boards = [];
   var storeRequests = [];
   for (var i = 0; i < count; i++) {
@@ -41,13 +41,34 @@ function storeThreads(boardKey, count, cb) {
     threads.push(thread);
     storeRequests.push(function(cb) {
       tree.store(thread, boardKey, function(err, threadKey) {
-        return cb(err, thread);
+        storePosts(threadKey, count, cb);
       });
     });
   }
   async.parallel(storeRequests, function(err) {
     if (!err) {
       console.log('board-' + boardKey[1] + ' added ' + count + ' threads');
+    }
+    // return testRetrieve();
+    return cb(err);
+  });
+};
+
+function storePosts(threadKey, count, cb) {
+  var posts = [];
+  var storeRequests = [];
+  for (var i = 0; i < count; i++) {
+    var post = helper.genPost();
+    posts.push(post);
+    storeRequests.push(function(cb) {
+      tree.store(post, threadKey, function(err, postKey) {
+        return cb(err, post);
+      });
+    });
+  }
+  async.parallel(storeRequests, function(err) {
+    if (!err) {
+      console.log('thread-' + threadKey[1] + ' added ' + count + ' posts');
     }
     // return testRetrieve();
     return cb(err);
