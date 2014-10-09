@@ -16,7 +16,8 @@
     "leveldown": "^0.10.0",
     "levelup": "^0.19.0",
     "read-only-stream": "^1.1.1",
-    "shortid": "^2.0.1"
+    "shortid": "^2.0.1",
+    "through2": "^0.6.2"
   },
   "devDependencies": {
     "faker": "^2.0.1",

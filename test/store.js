@@ -7,16 +7,28 @@ var db = new levelup(path.join(__dirname, '.tdb'));
 var helper = require(path.join(__dirname, 'helper'));
 var tree = new TreeDB(db);
 
-test('store', function(t) {
-  var count = 3;
-  storeBoards(count, function(err) {
-    if (!err) {
-      console.log('stored ' + count + ' boards with ' + count + ' threads each');
-    }
-    // return retrieveBoards();
-    t.end();
-  });
+tree.addIndex('board', 'created_at', function(err, key) {
+  store();
 });
+
+function store() {
+  test('store', function(t) {
+    var count = 3;
+    storeBoards(count, function(err) {
+      if (err) throw err;
+      console.log('stored ' + count + ' boards with ' + count + ' threads each');
+      var boardsStream = tree.nodes('board', {indexedField: 'created_at'});
+      var lastCreatedAt = 0;
+      boardsStream.on('data', function(ch) {
+        t.ok(ch.created_at > lastCreatedAt);
+        lastCreatedAt = ch.created_at;
+      })
+      boardsStream.on('end', function() {
+        t.end();
+      });
+    });
+  });
+}
 
 function storeBoards(count, cb) {
   var boards = [];
@@ -49,7 +61,6 @@ function storeThreads(boardKey, count, cb) {
     if (!err) {
       console.log('board-' + boardKey[1] + ' added ' + count + ' threads');
     }
-    // return testRetrieve();
     return cb(err);
   });
 };
@@ -70,7 +81,6 @@ function storePosts(threadKey, count, cb) {
     if (!err) {
       console.log('thread-' + threadKey[1] + ' added ' + count + ' posts');
     }
-    // return testRetrieve();
     return cb(err);
   });
 };

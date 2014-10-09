@@ -5,6 +5,7 @@ var bytewise = require('bytewise');
 var readonly = require('read-only-stream');
 var defined = require('defined');
 var async = require('async');
+var through2 = require('through2');
 var TreeDBIndexer = require(path.join(__dirname, 'indexer'));
 var keys = require(path.join(__dirname, 'keys'));
 
@@ -53,20 +54,31 @@ TreeDB.prototype.store = function(obj, parentKey, cb) {
 };
 
 TreeDB.prototype.nodes = function(type, opts) {
+  var self = this;
   var query;
   if (opts && opts.indexedField) {
     query = {
       gt: ['pri', type, 'index', opts.indexedField, null],
       lt: ['pri', type, 'index', opts.indexedField, undefined]
-    }
-    return readonly(this.indexed.createReadStream(query));
+    };
+    return self.indexed.createReadStream(query)
+    .pipe(through2.obj(function(ch, enc, cb) {
+      var self2 = this;
+      // ch is index key/value
+      var dbKey = ch.value;
+      self.db.get(dbKey, function(err, val) {
+        if (err) throw err;
+        self2.push(val);
+        cb();
+      });
+    }));
   }
   else {
     query = {
       gt: [type, null],
       lt: [type, undefined]
     };
-    return readonly(this.db.createReadStream(query));
+    return readonly(self.db.createReadStream(query));
   }
 };
 
