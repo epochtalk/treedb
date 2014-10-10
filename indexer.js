@@ -92,20 +92,28 @@ TreeDBIndexer.prototype.putIndexes = function(ch, cb) {
 
 TreeDBIndexer.prototype.indexesOf = function(key) {
   var self = this;
+  var readStream = null;
   if (key.length === 2) {
     var type = key[0];
-    var hash = key[1];
     // find indexes defined
     var query = {
       gt: ['pri', type, 'index', null],
       lt: ['pri', type, 'index', undefined]
     };
-    return self.indexesDB.createReadStream(query);
+    readStream = self.indexesDB.createReadStream(query);
   }
   else if (key.length === 4) {
     // nothing yet
-    return null;
+    var type = key[0];
+    var parentType = key[1];
+    var query = {
+      gt: ['sec', type, parentType, 'index', null],
+      lt: ['sec', type, parentType, 'index', undefined]
+    }
+    readStream = self.indexesDB.createReadStream(query);
   }
+  return readStream;
 }
 
 function noop(){};
+

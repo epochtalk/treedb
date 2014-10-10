@@ -8,7 +8,9 @@ var helper = require(path.join(__dirname, 'helper'));
 var tree = new TreeDB(db);
 
 tree.addIndex('board', 'created_at', function(err, key) {
-  store();
+  tree.addSecondaryIndex('thread', 'board', 'updated_at', function(err, key) {
+    store();
+  });
 });
 
 function store() {
