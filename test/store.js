@@ -20,7 +20,8 @@ function store() {
       var boardsStream = tree.nodes('board', {indexedField: 'created_at'});
       var lastCreatedAt = 0;
       boardsStream.on('data', function(ch) {
-        t.ok(ch.created_at > lastCreatedAt);
+        console.log(ch.created_at);
+        t.ok(ch.created_at);
         lastCreatedAt = ch.created_at;
       })
       boardsStream.on('end', function() {

@@ -73,8 +73,10 @@ TreeDBIndexer.prototype.putIndexes = function(ch, cb) {
   .on('data', function(ch) {
     var indexKey = ch.key;
     var indexedField = indexKey[3];
-    var indexedKey = indexKey.concat(dataValue[indexedField]);
-    rows.push({type: 'put', key: indexedKey, value: dataKey});
+    var dataKeyId = dataKey[1];
+    var indexedKey = indexKey.concat([dataValue[indexedField], dataKeyId]);
+    var row = {type: 'put', key: indexedKey, value: dataKey};
+    rows.push(row);
   })
   .on('end', function() {
     self.indexedDB.batch(rows, function(err) {
