@@ -60,7 +60,7 @@ TreeDBIndexer.prototype.addSecondaryIndex = function(type, parentType, field, cb
 };
 
 TreeDBIndexer.prototype.delIndexes = function(key) {
-  console.log('del indexes');
+  // console.log('del indexes');
 };
 
 TreeDBIndexer.prototype.putIndexes = function(ch, cb) {
@@ -69,20 +69,25 @@ TreeDBIndexer.prototype.putIndexes = function(ch, cb) {
   var storeRequests = [];
   var dataKey = ch.key;
   var dataValue = ch.value;
-  this.indexesOf(dataKey)
-  .on('data', function(ch) {
-    var indexKey = ch.key;
-    var indexedField = indexKey[3];
-    var dataKeyId = dataKey[1];
-    var indexedKey = indexKey.concat([dataValue[indexedField], dataKeyId]);
-    var row = {type: 'put', key: indexedKey, value: dataKey};
-    rows.push(row);
-  })
-  .on('end', function() {
-    self.indexedDB.batch(rows, function(err) {
-      if (cb) return cb();
+  var indexStream = this.indexesOf(dataKey);
+  if (indexStream) {
+    indexStream.on('data', function(ch) {
+      var indexKey = ch.key;
+      var indexedField = indexKey[3];
+      var dataKeyId = dataKey[1];
+      var indexedKey = indexKey.concat([dataValue[indexedField], dataKeyId]);
+      var row = {type: 'put', key: indexedKey, value: dataKey};
+      rows.push(row);
+    })
+    .on('end', function() {
+      self.indexedDB.batch(rows, function(err) {
+        if (cb) return cb();
+      });
     });
-  });
+  }
+  else {
+    if (cb) return cb(new Error('No indexes'));
+  }
 };
 
 TreeDBIndexer.prototype.indexesOf = function(key) {
