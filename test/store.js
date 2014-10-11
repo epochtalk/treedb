@@ -19,19 +19,28 @@ function store() {
     storeBoards(count, function(err) {
       if (err) throw err;
       console.log('stored ' + count + ' boards with ' + count + ' threads each');
-      var boardsStream = tree.nodes('board', {indexedField: 'created_at'});
-      var lastCreatedAt = 0;
-      boardsStream.on('data', function(ch) {
-        console.log(ch.created_at);
-        t.ok(ch.created_at);
-        lastCreatedAt = ch.created_at;
-      })
-      boardsStream.on('end', function() {
+
+      queryBoardsByIndex(function(err, boards) {
+        console.log('boards: ' + boards.length);
         t.end();
       });
     });
   });
 }
+
+function queryBoardsByIndex(cb) {
+  var boardsStream = tree.nodes('board', {indexedField: 'created_at'});
+  var lastCreatedAt = 0;
+  var boards = [];
+  boardsStream.on('data', function(ch) {
+    console.log(ch.created_at);
+    lastCreatedAt = ch.created_at;
+    boards.push(ch);
+  })
+  boardsStream.on('end', function() {
+    cb(null, boards);
+  });
+};
 
 function storeBoards(count, cb) {
   var boards = [];
