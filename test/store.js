@@ -22,7 +22,14 @@ function store() {
 
       queryBoardsByIndex(function(err, boards) {
         console.log('boards: ' + boards.length);
+        var lastCreatedAt = 0;
+        boards.forEach(function(board) {
+          console.log(board.created_at);
+          t.ok(board.created_at > lastCreatedAt);
+          lastCreatedAt = board.created_at;
+        });
         t.end();
+        helper.teardown();
       });
     });
   });
@@ -30,11 +37,8 @@ function store() {
 
 function queryBoardsByIndex(cb) {
   var boardsStream = tree.nodes('board', {indexedField: 'created_at'});
-  var lastCreatedAt = 0;
   var boards = [];
   boardsStream.on('data', function(ch) {
-    console.log(ch.created_at);
-    lastCreatedAt = ch.created_at;
     boards.push(ch);
   })
   boardsStream.on('end', function() {
@@ -46,14 +50,18 @@ function storeBoards(count, cb) {
   var boards = [];
   var storeRequests = [];
   for (var i = 0; i < count; i++) {
-    var board = helper.genBoard();
-    boards.push(board);
+    (function() {
+      var board = helper.genBoard();
+      boards.push(board);
+    })();
+  }
+  boards.forEach(function(board) {
     storeRequests.push(function(cb) {
       tree.store(board, function(err, boardKey) {
         storeThreads(boardKey, count, cb);
       });
     });
-  }
+  });
   async.parallel(storeRequests, cb);
 };
 

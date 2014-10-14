@@ -1,6 +1,7 @@
 var exp = {};
 module.exports = exp;
 
+var path = require('path');
 var faker = require('faker');
 var rimraf = require('rimraf');
 
@@ -36,7 +37,8 @@ exp.genPost = function() {
 };
 
 exp.teardown  = function() {
-  rimraf('./.tdb', function(error){
-    console.log('teardown: removed ./.tdb.');
+  var dbPath = path.join(__dirname, '.tdb');
+  rimraf(dbPath, function(error){
+    console.log('teardown: removed ' + dbPath);
   });
 };
