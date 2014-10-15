@@ -5,7 +5,7 @@ var path = require('path');
 var TreeDB = require('../');
 var db = new levelup(path.join(__dirname, '.tdb'));
 var helper = require(path.join(__dirname, 'helper'));
-var tree = new TreeDB(db);
+var tree = TreeDB(db);
 
 tree.addIndex('board', 'created_at', function(err, key) {
   tree.addSecondaryIndex('thread', 'board', 'updated_at', function(err, key) {

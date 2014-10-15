@@ -25,6 +25,8 @@ TreeDB.prototype.store = function(obj, parentKey, cb) {
     parentKey = false;
   }
   if (!parentKey || typeof parentKey !== 'object') parentKey = false;
+  if (!cb) cb = noop;
+
   var self = this;
   var rows = [];
   var rels = [];
