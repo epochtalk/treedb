@@ -50,7 +50,7 @@ TreeDB.prototype.store = function(obj, parentKey, cb) {
   commit();
   function commit() {
     async.parallel(storeRequests, function(err) {
-      cb(err, key);
+      cb(err, {key: key, value: obj});
     });
   };
 };
