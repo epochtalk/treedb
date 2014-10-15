@@ -55,6 +55,11 @@ TreeDB.prototype.store = function(obj, parentKey, cb) {
   };
 };
 
+TreeDB.prototype.get = function(key, cb) {
+  if (!cb) cb = noop;
+  this.db.get(key, cb);
+};
+
 TreeDB.prototype.nodes = function(type, opts) {
   var self = this;
   var query;
