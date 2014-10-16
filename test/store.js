@@ -16,16 +16,11 @@ tree.addIndex('board', 'created_at', function(err, key) {
 function store() {
   test('store', function(t) {
     var count = 3;
-    storeBoards(count, function(err) {
-      if (err) throw err;
-      console.log('stored ' + count + ' boards with ' + count + ' threads each');
-
+    storeForumHierarchy(count, function(err) {
       queryBoardsByIndex(function(err, boards) {
-        console.log('boards: ' + boards.length);
         var lastCreatedAt = 0;
         boards.forEach(function(board) {
-          console.log(board.created_at);
-          t.ok(board.created_at > lastCreatedAt);
+          t.ok(board.created_at > lastCreatedAt, 'created_at order check: ' + board.created_at);
           lastCreatedAt = board.created_at;
         });
         t.end();
@@ -46,7 +41,8 @@ function queryBoardsByIndex(cb) {
   });
 };
 
-function storeBoards(count, cb) {
+// count is number of boards/threads/posts
+function storeForumHierarchy(count, cb) {
   var boards = [];
   var storeRequests = [];
   for (var i = 0; i < count; i++) {
@@ -57,8 +53,8 @@ function storeBoards(count, cb) {
   }
   boards.forEach(function(board) {
     storeRequests.push(function(cb) {
-      tree.store(board, function(err, boardKey) {
-        storeThreads(boardKey, count, cb);
+      tree.store(board, function(err, ch) {
+        storeThreads(ch.key, count, cb);
       });
     });
   });
@@ -72,17 +68,12 @@ function storeThreads(boardKey, count, cb) {
     var thread = helper.genThread();
     threads.push(thread);
     storeRequests.push(function(cb) {
-      tree.store(thread, boardKey, function(err, threadKey) {
-        storePosts(threadKey, count, cb);
+      tree.store(thread, boardKey, function(err, ch) {
+        storePosts(ch.key, count, cb);
       });
     });
   }
-  async.parallel(storeRequests, function(err) {
-    if (!err) {
-      console.log('board-' + boardKey[1] + ' added ' + count + ' threads');
-    }
-    return cb(err);
-  });
+  async.parallel(storeRequests, cb);
 };
 
 function storePosts(threadKey, count, cb) {
@@ -92,16 +83,11 @@ function storePosts(threadKey, count, cb) {
     var post = helper.genPost();
     posts.push(post);
     storeRequests.push(function(cb) {
-      tree.store(post, threadKey, function(err, postKey) {
+      tree.store(post, threadKey, function(err, ch) {
         return cb(err, post);
       });
     });
   }
-  async.parallel(storeRequests, function(err) {
-    if (!err) {
-      console.log('thread-' + threadKey[1] + ' added ' + count + ' posts');
-    }
-    return cb(err);
-  });
+  async.parallel(storeRequests, cb);
 };
 

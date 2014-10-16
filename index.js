@@ -90,11 +90,21 @@ TreeDB.prototype.nodes = function(type, opts) {
 };
 
 TreeDB.prototype.children = function(key, opts) {
+  var self = this;
   var query = {
     gt: key.concat(null),
     lt: key.concat(undefined)
   };
-  return readonly(this.tree.createReadStream(query));
+  return self.tree.createReadStream(query)
+  .pipe(through2.obj(function(ch, enc, cb) {
+    var self2 = this;
+    var dbKey = [ch.key[2], ch.key[3]];
+    self.db.get(dbKey, function(err, val) {
+      if (err) throw err;
+      self2.push({key: dbKey, value: val});
+      cb();
+    });
+  }));
 };
 
 TreeDB.prototype.addIndex = function(type, field, cb) {

@@ -76,6 +76,8 @@ TreeDBIndexer.prototype.putIndexes = function(ch, cb) {
       var indexedField = indexKey[3];
       var dataKeyId = dataKey[1];
       var indexedKey = indexKey.concat([dataValue[indexedField], dataKeyId]);
+      // example indexedKey
+      // ['pri', 'board', 'index', 'created_at', 1381891311050, '-y_Jrwa1B']
       var row = {type: 'put', key: indexedKey, value: dataKey};
       rows.push(row);
     })
