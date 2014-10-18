@@ -65,8 +65,8 @@ TreeDB.prototype.nodes = function(type, opts) {
   var query;
   if (opts && opts.indexedField) {
     query = {
-      gt: ['pri', type, 'index', opts.indexedField, null],
-      lt: ['pri', type, 'index', opts.indexedField, undefined]
+      gt: ['pri', type, opts.indexedField, null],
+      lt: ['pri', type, opts.indexedField, undefined]
     };
     return self.indexed.createReadStream(query)
     .pipe(through2.obj(function(ch, enc, cb) {

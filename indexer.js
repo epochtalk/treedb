@@ -27,7 +27,7 @@ TreeDBIndexer.prototype.addIndex = function(type, field, cb) {
   if (!cb) cb = noop;
   var self = this;
   var rows = [];
-  var key = ['pri', type, 'index', field];
+  var key = ['pri', type, field];
   rows.push({type: 'put', key: key, value: 0});
   var storeRequests = [];
   storeRequests.push(function(cb) {
@@ -45,7 +45,7 @@ TreeDBIndexer.prototype.addSecondaryIndex = function(type, parentType, field, cb
   if (!cb) cb = noop;
   var self = this;
   var rows = [];
-  var key = ['sec', type, parentType, 'index', field];
+  var key = ['sec', type, parentType, field];
   rows.push({type: 'put', key: key, value: 0});
   var storeRequests = [];
   storeRequests.push(function(cb) {
@@ -73,7 +73,7 @@ TreeDBIndexer.prototype.putIndexes = function(ch, cb) {
   if (indexStream) {
     indexStream.on('data', function(ch) {
       var indexKey = ch.key;
-      var indexedField = indexKey[3];
+      var indexedField = indexKey[2];
       var dataKeyId = dataKey[1];
       var indexedKey = indexKey.concat([dataValue[indexedField], dataKeyId]);
       // example indexedKey
@@ -99,8 +99,8 @@ TreeDBIndexer.prototype.indexesOf = function(key) {
     var type = key[0];
     // find indexes defined
     var query = {
-      gt: ['pri', type, 'index', null],
-      lt: ['pri', type, 'index', undefined]
+      gt: ['pri', type, null],
+      lt: ['pri', type, undefined]
     };
     readStream = self.indexesDB.createReadStream(query);
   }
@@ -109,8 +109,8 @@ TreeDBIndexer.prototype.indexesOf = function(key) {
     var type = key[0];
     var parentType = key[1];
     var query = {
-      gt: ['sec', type, parentType, 'index', null],
-      lt: ['sec', type, parentType, 'index', undefined]
+      gt: ['sec', type, parentType, null],
+      lt: ['sec', type, parentType, undefined]
     }
     readStream = self.indexesDB.createReadStream(query);
   }
