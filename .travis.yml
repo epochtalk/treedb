@@ -1,9 +1,6 @@
-before_install:
-  - echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
 language: node_js
 node_js:
   - 0.10
-services:
 notifications:
   email:
     - jw@slickage.com
