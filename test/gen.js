@@ -7,26 +7,32 @@ var rimraf = require('rimraf');
 
 // generation of example models
 
-exp.genBoard = function() {
+exp.board = function() {
   var board = {
     type: 'board',
-    title: 'All About ' + faker.hacker.adjective() + ' ' + faker.hacker.noun() + 's',
+    title: 'All About '
+      + faker.hacker.adjective()
+      + ' ' + faker.hacker.noun()
+      + 's',
     desc: faker.lorem.paragraph(),
     created_at: faker.date.past().getTime()
   };
   return board;
 };
 
-exp.genThread = function() {
+exp.thread = function() {
   var thread = {
     type: 'thread',
-    subject: faker.hacker.adjective() + ' ' + faker.hacker.adjective() + ' ' + faker.hacker.noun(),
+    subject: faker.hacker.adjective()
+      + ' '
+      + faker.hacker.adjective()
+      + ' ' + faker.hacker.noun(),
     created_at: faker.date.recent().getTime()
   };
   return thread;
 };
 
-exp.genPost = function() {
+exp.post = function() {
   var post = {
     type: 'post',
     title: faker.hacker.adjective() + ' ' + faker.hacker.noun(),
@@ -36,9 +42,3 @@ exp.genPost = function() {
   return post;
 };
 
-exp.teardown  = function() {
-  var dbPath = path.join(__dirname, '.tdb');
-  rimraf(dbPath, function(error){
-    console.log('teardown: removed ' + dbPath);
-  });
-};

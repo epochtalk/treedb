@@ -2,10 +2,10 @@ var test = require('tape');
 var levelup = require('levelup');
 var async = require('async');
 var path = require('path');
-var TreeDB = require('../');
-var db = new levelup(path.join(__dirname, '.tdb'));
-var helper = require(path.join(__dirname, 'helper'));
-var tree = TreeDB(db);
+var rimraf = require('rimraf');
+var gen = require(path.join(__dirname, 'gen'));
+var tree = require(path.join(__dirname, 'test-treedb'));
+var seed = require(path.join(__dirname, 'seed'));
 
 tree.addIndex('board', 'created_at', function(err, key) {
   tree.addSecondaryIndex('thread', 'board', 'updated_at', function(err, key) {
@@ -16,7 +16,8 @@ tree.addIndex('board', 'created_at', function(err, key) {
 function store() {
   test('store', function(t) {
     var count = 3;
-    storeForumHierarchy(count, function(err) {
+    seed(count, function(err) {
+      tree.nodes('board').on('data', console.log);
       queryBoardsByIndex(function(err, boards) {
         var lastCreatedAt = 0;
         boards.forEach(function(board) {
@@ -24,7 +25,7 @@ function store() {
           lastCreatedAt = board.created_at;
         });
         t.end();
-        helper.teardown();
+        teardown();
       });
     });
   });
@@ -41,53 +42,10 @@ function queryBoardsByIndex(cb) {
   });
 };
 
-// count is number of boards/threads/posts
-function storeForumHierarchy(count, cb) {
-  var boards = [];
-  var storeRequests = [];
-  for (var i = 0; i < count; i++) {
-    (function() {
-      var board = helper.genBoard();
-      boards.push(board);
-    })();
-  }
-  boards.forEach(function(board) {
-    storeRequests.push(function(cb) {
-      tree.store(board, function(err, ch) {
-        storeThreads(ch.key, count, cb);
-      });
-    });
+function teardown() {
+  var dbPath = path.join('/tmp', '.treedb');
+  rimraf(dbPath, function(error){
+    console.log('teardown: removed ' + dbPath);
   });
-  async.parallel(storeRequests, cb);
-};
-
-function storeThreads(boardKey, count, cb) {
-  var threads = [];
-  var storeRequests = [];
-  for (var i = 0; i < count; i++) {
-    var thread = helper.genThread();
-    threads.push(thread);
-    storeRequests.push(function(cb) {
-      tree.store(thread, boardKey, function(err, ch) {
-        storePosts(ch.key, count, cb);
-      });
-    });
-  }
-  async.parallel(storeRequests, cb);
-};
-
-function storePosts(threadKey, count, cb) {
-  var posts = [];
-  var storeRequests = [];
-  for (var i = 0; i < count; i++) {
-    var post = helper.genPost();
-    posts.push(post);
-    storeRequests.push(function(cb) {
-      tree.store(post, threadKey, function(err, ch) {
-        return cb(err, post);
-      });
-    });
-  }
-  async.parallel(storeRequests, cb);
-};
+}
 

@@ -26,14 +26,11 @@ TreeDB.prototype.store = function(obj, parentKey, cb) {
   }
   if (!parentKey || typeof parentKey !== 'object') parentKey = false;
   if (!cb) cb = noop;
-
   var self = this;
   var rows = [];
   var rels = [];
-  var hash = keys.hash();
-  var key = [obj.type, hash];
+  var key = [obj.type, keys.hash()];
   rows.push({type: 'put', key: key, value: obj});
-
   var storeRequests = [];
   if (parentKey) {
     // assumes parent already has been saved in the database
@@ -42,11 +39,9 @@ TreeDB.prototype.store = function(obj, parentKey, cb) {
       self.tree.batch(rels, cb);
     });
   }
-
   storeRequests.push(function(cb) {
     self.db.batch(rows, cb);
   });
-
   commit();
   function commit() {
     async.parallel(storeRequests, function(err) {
@@ -59,6 +54,11 @@ TreeDB.prototype.get = function(key, cb) {
   if (!cb) cb = noop;
   this.db.get(key, cb);
 };
+
+// metadata
+TreeDB.prototype.meta = function(type, parentKey, opts, cb) {
+
+}
 
 TreeDB.prototype.nodes = function(type, opts) {
   var self = this;
@@ -114,6 +114,7 @@ TreeDB.prototype.addIndex = function(type, field, cb) {
 TreeDB.prototype.addSecondaryIndex = function(type, parentType, field, cb) {
   this.indexer.addSecondaryIndex(type, parentType, field, cb);
 };
+
 
 function noop(){};
 
