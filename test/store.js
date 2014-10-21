@@ -17,7 +17,6 @@ function store() {
   test('store', function(t) {
     var count = 3;
     seed(count, function(err) {
-      tree.nodes('board').on('data', console.log);
       queryBoardsByIndex(function(err, boards) {
         var lastCreatedAt = 0;
         boards.forEach(function(board) {

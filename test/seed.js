@@ -1,20 +1,14 @@
 module.exports = seedForum;
 var async = require('async');
-var test = require('tape');
 var path = require('path');
 var gen = require(path.join(__dirname, 'gen'));
 var tree = require(path.join(__dirname, 'test-treedb'));
 
 // count is number of boards/threads/posts
 function seedForum(count, cb) {
-  var boards = [];
   var storeRequests = [];
-  for (var i = 0; i < count; i++) {
-    (function() {
-      var board = gen.board();
-      boards.push(board);
-    })();
-  }
+  var boards = genFake('board', count);
+
   boards.forEach(function(board) {
     storeRequests.push(function(cb) {
       tree.store(board, function(err, ch) {
@@ -62,3 +56,4 @@ function genFake(type, count) {
   }
   return objs;
 }
+
