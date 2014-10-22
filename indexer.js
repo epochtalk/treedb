@@ -59,6 +59,7 @@ TreeDBIndexer.prototype.delIndexes = function(key) {
 };
 
 TreeDBIndexer.prototype.putIndexes = function(ch, cb) {
+  if (!cb) cb = noop;
   var self = this;
   var rows = [];
   var metaRows = [];
@@ -66,40 +67,47 @@ TreeDBIndexer.prototype.putIndexes = function(ch, cb) {
   var key = ch.key;
   var id = key[1];
   var val = ch.value;
-  var indexStream = this.indexesOf(key);
-  if (indexStream) {
-    indexStream.on('data', function(index) {
+  self.indexesOf(key, function(err, indexes) {
+    indexes.forEach(function(index) {
       var indexedField = index.key[index.key.length - 1];
       var indexedKey = index.key.concat([val[indexedField], id]);
-      console.log(indexedKey);
       // ['pri', 'board', 'created_at', 1381891311050, '-y_Jrwa1B']
       var row = {type: 'put', key: indexedKey, value: key};
       // var metaKey;
       // if (ch.key.length === 2) {
       //   metaKey = ['meta', ch.key[0], 'count'
       rows.push(row);
-    })
-    .on('end', function() {
-      self.indexed.batch(rows, function(err) {
-        if (cb) return cb();
-      });
     });
-  }
-  else {
-    if (cb) return cb(new Error('No indexes'));
-  }
+    self.indexed.batch(rows, cb);
+  });
 };
 
-TreeDBIndexer.prototype.indexesOf = function(key) {
+TreeDBIndexer.prototype.indexQuery = function(q, cb) {
+  var indexStream = this.indexes.createReadStream(q);
+  var indexes = [];
+  indexStream.on('data', function(index) {
+    indexes.push(index);
+  })
+  .on('end', function() {
+    cb(null, indexes);
+  });
+};
+
+
+TreeDBIndexer.prototype.indexesOf = function(key, cb) {
+  var self = this;
   var type = key[0];
-  var q = {gt: ['pri', type, null], lt: ['pri', type, undefined]};
+  var priQuery = {gt: ['pri', type, null], lt: ['pri', type, undefined]};
+  var secQuery = {gt: ['sec', type, null], lt: ['sec', type, undefined]};
   // example: [ 'pri', 'board', 'created_at' ]
-  return this.indexes.createReadStream(q);
-  //   var query = {
-  //     gt: ['sec', type, parentType, null],
-  //     lt: ['sec', type, parentType, undefined]
-  //   }
-}
+  async.parallel([
+    function(cb) { self.indexQuery(priQuery, cb); },
+    function(cb) { self.indexQuery(secQuery, cb); }
+  ], function(err, results) {
+    var indexes = results[0].concat(results[1]);
+    return cb(err, indexes);
+  });
+};
 
 function noop(){};
 
