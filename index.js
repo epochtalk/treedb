@@ -16,6 +16,7 @@ function TreeDB(db, opts) {
   this.tree = this.db.sublevel('tree');
   this.indexes = this.db.sublevel('indexes');
   this.indexed = this.db.sublevel('indexed');
+  this.meta = this.db.sublevel('meta');
   this.indexer = new TreeDBIndexer(this.db);
 };
 
@@ -56,7 +57,9 @@ TreeDB.prototype.get = function(key, cb) {
 };
 
 // metadata
-TreeDB.prototype.meta = function(type, parentKey, opts, cb) {
+TreeDB.prototype.meta = function(type, parentType, opts, cb) {
+  var self = this;
+  // meta keys
 
 }
 
@@ -114,7 +117,6 @@ TreeDB.prototype.addIndex = function(type, field, cb) {
 TreeDB.prototype.addSecondaryIndex = function(type, parentType, field, cb) {
   this.indexer.addSecondaryIndex(type, parentType, field, cb);
 };
-
 
 function noop(){};
 
