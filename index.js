@@ -13,7 +13,8 @@ function TreeDB(db, opts) {
   if (!(this instanceof TreeDB)) return new TreeDB(db, opts);
   if (!opts) opts = {};
   this.db = sublevel(db, {keyEncoding: bytewise, valueEncoding: 'json'});
-  this.tree = this.db.sublevel('tree');
+  this.branches = this.db.sublevel('branches');
+  this.roots = this.db.sublevel('roots');
   this.indexes = this.db.sublevel('indexes');
   this.indexed = this.db.sublevel('indexed');
   this.meta = this.db.sublevel('meta');
@@ -29,16 +30,17 @@ TreeDB.prototype.store = function(obj, parentKey, cb) {
   if (!cb) cb = noop;
   var self = this;
   var rows = [];
-  var rels = [];
+  var cRels = [];
+  var pRels = [];
   var key = [obj.type, keys.hash()];
   rows.push({type: 'put', key: key, value: obj});
   var storeRequests = [];
   if (parentKey) {
     // assumes parent already has been saved in the database
-    rels.push({type: 'put', key: parentKey.concat(key), value: 0});
-    storeRequests.push(function(cb) {
-      self.tree.batch(rels, cb);
-    });
+    cRels.push({type: 'put', key: parentKey.concat(key), value: 0});
+    pRels.push({type: 'put', key: key.concat(parentKey), value: 0});
+    storeRequests.push(function(cb) { self.branches.batch(cRels, cb); });
+    storeRequests.push(function(cb) { self.roots.batch(pRels, cb); });
   }
   storeRequests.push(function(cb) {
     self.db.batch(rows, cb);
@@ -71,17 +73,17 @@ TreeDB.prototype.nodes = function(type, opts) {
       gt: ['pri', type, opts.indexedField, null],
       lt: ['pri', type, opts.indexedField, undefined]
     };
-    return self.indexed.createReadStream(query)
+    return readonly(self.indexed.createReadStream(query)
     .pipe(through2.obj(function(ch, enc, cb) {
       var self2 = this;
       // ch is index key/value
       var dbKey = ch.value;
       self.db.get(dbKey, function(err, val) {
         if (err) throw err;
-        self2.push(val);
+        self2.push({key: dbKey, value: val});
         cb();
       });
-    }));
+    })));
   }
   else {
     query = {
@@ -92,22 +94,45 @@ TreeDB.prototype.nodes = function(type, opts) {
   }
 };
 
-TreeDB.prototype.children = function(key, opts) {
+TreeDB.prototype.children = function(parentKey, type, opts) {
   var self = this;
-  var query = {
-    gt: key.concat(null),
-    lt: key.concat(undefined)
-  };
-  return self.tree.createReadStream(query)
-  .pipe(through2.obj(function(ch, enc, cb) {
-    var self2 = this;
-    var dbKey = [ch.key[2], ch.key[3]];
-    self.db.get(dbKey, function(err, val) {
-      if (err) throw err;
-      self2.push({key: dbKey, value: val});
-      cb();
-    });
-  }));
+  var parentType = parentKey[0];
+  var parentId = parentKey[1];
+  var query;
+  if (opts && opts.indexedField) {
+    var queryKey = ['sec', type, parentKey[0], parentKey[1], opts.indexedField];
+    query = {
+      gt: queryKey.concat(null),
+      lt: queryKey.concat(undefined)
+    };
+    return readonly(self.indexed.createReadStream(query)
+    .pipe(through2.obj(function(ch, enc, cb) {
+      var self2 = this;
+      // ch is index key/value
+      var dbKey = ch.value;
+      self.db.get(dbKey, function(err, val) {
+        if (err) throw err;
+        self2.push({key: dbKey, value: val});
+        cb();
+      });
+    })));
+  }
+  else {
+    query = {
+      gt: parentKey.concat([type, null]),
+      lt: parentKey.concat([type, undefined])
+    };
+    return readonly(self.branches.createReadStream(query)
+    .pipe(through2.obj(function(ch, enc, cb) {
+      var self2 = this;
+      var dbKey = [ch.key[2], ch.key[3]];
+      self.db.get(dbKey, function(err, val) {
+        if (err) throw err;
+        self2.push({key: dbKey, value: val});
+        cb();
+      });
+    })));
+  }
 };
 
 TreeDB.prototype.addIndex = function(type, field, cb) {

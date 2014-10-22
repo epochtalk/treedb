@@ -7,9 +7,23 @@ function TreeDBIndexer(db) {
   this.indexes = db.sublevel('indexes');
   this.indexed = db.sublevel('indexed');
   this.meta = db.sublevel('meta');
+  this.roots = db.sublevel('roots');
   var self = this;
   trigger(db, 'content-trigger', function (ch) {
-    if (ch.type === 'put') self.putIndexes(ch);
+    var key = ch.key;
+    if (ch.type === 'put') { 
+      var q = {
+        gt: key.concat(null),
+        lt: key.concat(undefined),
+        limit: 1
+      };
+      var parentKey = null;
+      self.roots.createReadStream(q).on('data', function(ch) {
+        parentKey = [ch.key[2], ch.key[3]];
+      }).on('end', function() {
+        self.putIndexes(ch, parentKey);
+      });
+    }
     else if (ch.type === 'del') self.delIndexes(ch.key);
     return ch.key;
   },
@@ -30,9 +44,7 @@ TreeDBIndexer.prototype.addIndex = function(type, field, cb) {
   });
   commit();
   function commit() {
-    async.parallel(storeRequests, function(err) {
-      cb(err, key);
-    });
+    async.parallel(storeRequests, function(err) { cb(err, key); });
   };
 };
 
@@ -48,9 +60,7 @@ TreeDBIndexer.prototype.addSecondaryIndex = function(type, parentType, field, cb
   });
   commit();
   function commit() {
-    async.parallel(storeRequests, function(err) {
-      cb(err, key);
-    });
+    async.parallel(storeRequests, function(err) { cb(err, key); });
   };
 };
 
@@ -58,7 +68,7 @@ TreeDBIndexer.prototype.delIndexes = function(key) {
   // console.log('del indexes');
 };
 
-TreeDBIndexer.prototype.putIndexes = function(ch, cb) {
+TreeDBIndexer.prototype.putIndexes = function(ch, parentKey, cb) {
   if (!cb) cb = noop;
   var self = this;
   var rows = [];
@@ -69,17 +79,27 @@ TreeDBIndexer.prototype.putIndexes = function(ch, cb) {
   var val = ch.value;
   self.indexesOf(key, function(err, indexes) {
     indexes.forEach(function(index) {
+      // gets all primary/secondary indexes
       var indexedField = index.key[index.key.length - 1];
       var indexedKey = index.key.concat([val[indexedField], id]);
+      if (index.key[0] === 'sec') {
+        indexedKey = index.key.concat([val[indexedField], id]);
+        indexedKey.splice(3, 0, parentKey[1]);
+      }
       // ['pri', 'board', 'created_at', 1381891311050, '-y_Jrwa1B']
+      // ['sec', 'thread', 'board', 'Wk-hvQmvHr', 'updated_at', 1415323275770,
+      // 'ZJc6RZ48Hr']
       var row = {type: 'put', key: indexedKey, value: key};
-      // var metaKey;
-      // if (ch.key.length === 2) {
-      //   metaKey = ['meta', ch.key[0], 'count'
       rows.push(row);
     });
-    self.indexed.batch(rows, cb);
+    storeRequests.push(function(cb) {
+      self.indexed.batch(rows, cb);
+    });
+    commit();
   });
+  function commit() {
+    async.parallel(storeRequests, function(err) { cb(err, key); });
+  };
 };
 
 TreeDBIndexer.prototype.indexQuery = function(q, cb) {
