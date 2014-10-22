@@ -27,7 +27,8 @@ exp.thread = function() {
       + ' '
       + faker.hacker.adjective()
       + ' ' + faker.hacker.noun(),
-    created_at: faker.date.recent().getTime()
+    created_at: faker.date.recent().getTime(),
+    updated_at: faker.date.future().getTime()
   };
   return thread;
 };
