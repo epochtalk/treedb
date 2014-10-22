@@ -17,7 +17,6 @@ exp.board = function() {
     desc: faker.lorem.paragraph(),
     created_at: faker.date.past().getTime()
   };
-  console.log(board);
   return board;
 };
 
