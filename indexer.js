@@ -2,25 +2,18 @@ module.exports = TreeDBIndexer;
 var trigger = require('level-trigger');
 var async = require('async');
 
-function TreeDBIndexer(tree) {
-  if (!(this instanceof TreeDBIndexer)) return new TreeDBIndexer(treeDB);
-  this.indexes = tree.sublevel('indexes');
-  this.indexed = tree.sublevel('indexed');
-  this.meta = tree.sublevel('meta');
+function TreeDBIndexer(db) {
+  if (!(this instanceof TreeDBIndexer)) return new TreeDBIndexer(db);
+  this.indexes = db.sublevel('indexes');
+  this.indexed = db.sublevel('indexed');
+  this.meta = db.sublevel('meta');
   var self = this;
-  var metaPrefix = ['meta']
-  trigger(tree, 'index-trigger', function (ch) {
-    if (ch.type === 'put') {
-      self.putIndexes(ch);
-    }
-    else if (ch.type === 'del') {
-      self.delIndexes(ch.key);
-    }
+  trigger(db, 'content-trigger', function (ch) {
+    if (ch.type === 'put') self.putIndexes(ch);
+    else if (ch.type === 'del') self.delIndexes(ch.key);
     return ch.key;
   },
   function (value, done) {
-    // call done when job is done.
-    // fix for callback of put index
     done();
   });
 };
@@ -70,18 +63,17 @@ TreeDBIndexer.prototype.putIndexes = function(ch, cb) {
   var rows = [];
   var metaRows = [];
   var storeRequests = [];
-  var dataKey = ch.key;
-  var dataValue = ch.value;
-  var indexStream = this.indexesOf(dataKey);
+  var key = ch.key;
+  var id = key[1];
+  var val = ch.value;
+  var indexStream = this.indexesOf(key);
   if (indexStream) {
-    indexStream.on('data', function(ch) {
-      var indexKey = ch.key;
-      var indexedField = indexKey[2];
-      var dataKeyId = dataKey[1];
-      var indexedKey = indexKey.concat([dataValue[indexedField], dataKeyId]);
-      // example indexedKey
+    indexStream.on('data', function(index) {
+      var indexedField = index.key[index.key.length - 1];
+      var indexedKey = index.key.concat([val[indexedField], id]);
+      console.log(indexedKey);
       // ['pri', 'board', 'created_at', 1381891311050, '-y_Jrwa1B']
-      var row = {type: 'put', key: indexedKey, value: dataKey};
+      var row = {type: 'put', key: indexedKey, value: key};
       // var metaKey;
       // if (ch.key.length === 2) {
       //   metaKey = ['meta', ch.key[0], 'count'
@@ -99,27 +91,14 @@ TreeDBIndexer.prototype.putIndexes = function(ch, cb) {
 };
 
 TreeDBIndexer.prototype.indexesOf = function(key) {
-  var self = this;
-  var readStream = null;
   var type = key[0];
-  // find indexes defined
-  var query = {
-    gt: ['pri', type, null],
-    lt: ['pri', type, undefined]
-  };
-  readStream = self.indexes.createReadStream(query);
-  return readStream;
-  // else if (key.length === 4) {
-  //   // nothing yet
-  //   var type = key[0];
-  //   var parentType = key[1];
+  var q = {gt: ['pri', type, null], lt: ['pri', type, undefined]};
+  // example: [ 'pri', 'board', 'created_at' ]
+  return this.indexes.createReadStream(q);
   //   var query = {
   //     gt: ['sec', type, parentType, null],
   //     lt: ['sec', type, parentType, undefined]
   //   }
-  //   readStream = self.indexesDB.createReadStream(query);
-  // }
-  // return readStream;
 }
 
 function noop(){};
