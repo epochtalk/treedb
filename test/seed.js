@@ -19,7 +19,6 @@ function seedForum(count, cb) {
   async.parallel(storeRequests, cb);
 };
 
-
 function storeThreads(boardKey, count, cb) {
   var threads = genFake('thread', count);
   var storeRequests = [];

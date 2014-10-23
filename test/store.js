@@ -13,8 +13,7 @@ tree.addIndex('board', 'created_at', function(err, key) {
   });
 });
 
-var count = 3;
-
+var count = 5;
 function start() {
   test('store', function(t) {
     seed(count, function(err) {

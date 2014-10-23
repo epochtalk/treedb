@@ -12,11 +12,7 @@ function TreeDBIndexer(db) {
   trigger(db, 'content-trigger', function (ch) {
     var key = ch.key;
     if (ch.type === 'put') {
-      var q = {
-        gt: key.concat(null),
-        lt: key.concat(undefined),
-        limit: 1
-      };
+      var q = {gt: key.concat(null), lt: key.concat(undefined), limit: 1};
       var parentKey = null;
       self.roots.createReadStream(q).on('data', function(ch) {
         parentKey = [ch.key[2], ch.key[3]];
@@ -27,9 +23,7 @@ function TreeDBIndexer(db) {
     else if (ch.type === 'del') self.delIndexes(ch.key);
     return ch.key;
   },
-  function (value, done) {
-    done();
-  });
+  function (value, done) { done(); });
 };
 
 TreeDBIndexer.prototype.addIndex = function(type, field, cb) {
@@ -86,7 +80,7 @@ TreeDBIndexer.prototype.putIndexes = function(ch, parentKey, cb) {
       // ['pri', 'board', 'created_at', 1381891311050, '-y_Jrwa1B']
       // ['sec', 'thread', 'board', 'Wk-hvQmvHr', 'updated_at', 1415323275770,
       // 'ZJc6RZ48Hr']
-      var row = {type: 'put', key: indexedKey, value: key};
+      var row = {type: 'put', key: indexedKey, value: 0};
       rows.push(row);
     });
 

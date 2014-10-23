@@ -76,8 +76,7 @@ TreeDB.prototype.nodes = function(type, opts) {
     return readonly(self.indexed.createReadStream(query)
     .pipe(through2.obj(function(ch, enc, cb) {
       var self2 = this;
-      // ch is index key/value
-      var dbKey = ch.value;
+      var dbKey = [ch.key[1], ch.key[ch.key.length - 1]];
       self.db.get(dbKey, function(err, val) {
         if (err) throw err;
         self2.push({key: dbKey, value: val});
@@ -109,7 +108,7 @@ TreeDB.prototype.children = function(parentKey, type, opts) {
     .pipe(through2.obj(function(ch, enc, cb) {
       var self2 = this;
       // ch is index key/value
-      var dbKey = ch.value;
+      var dbKey = [ch.key[1], ch.key[ch.key.length - 1]];
       self.db.get(dbKey, function(err, val) {
         if (err) throw err;
         self2.push({key: dbKey, value: val});

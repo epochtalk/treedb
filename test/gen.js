@@ -4,10 +4,12 @@ module.exports = exp;
 var path = require('path');
 var faker = require('faker');
 var rimraf = require('rimraf');
+var sleep = require('sleep');
 
 // generation of example models
 
 exp.board = function() {
+  sleep.usleep(1000);
   var board = {
     type: 'board',
     title: 'All About '
@@ -21,6 +23,7 @@ exp.board = function() {
 };
 
 exp.thread = function() {
+  sleep.usleep(1000);
   var thread = {
     type: 'thread',
     subject: faker.hacker.adjective()
@@ -28,12 +31,13 @@ exp.thread = function() {
       + faker.hacker.adjective()
       + ' ' + faker.hacker.noun(),
     created_at: faker.date.recent().getTime(),
-    updated_at: faker.date.future().getTime()
+    updated_at: faker.date.recent().getTime()
   };
   return thread;
 };
 
 exp.post = function() {
+  sleep.usleep(1000);
   var post = {
     type: 'post',
     title: faker.hacker.adjective() + ' ' + faker.hacker.noun(),
