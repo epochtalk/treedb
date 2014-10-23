@@ -115,13 +115,17 @@ TreeDBIndexer.prototype.indexesOf = function(key, cb) {
     return cb(err, indexes);
   });
 };
-TreeDBIndexer.prototype.first = function(type, sortField, parentKey, cb) {
+TreeDBIndexer.prototype.metadata = function(meta, type, sortField, parentKey, cb) {
   if (typeof parentKey === 'function') {
     cb = parentKey;
     parentKey = false;
   }
   if (!parentKey || typeof parentKey !== 'object') parentKey = false;
   if (!cb) cb = noop;
+  if (meta !== 'first' && meta !== 'last' && meta !== 'count') {
+    return cb(new Error('unknown metadata'), null);
+  }
+
   var self = this;
   // ['pri', 'board', 'created_at', 1381891311050, '-y_Jrwa1B']
   // ['sec', 'thread', 'board', 'Wk-hvQmvHr', 'updated_at', 1415323275770,
@@ -135,26 +139,27 @@ TreeDBIndexer.prototype.first = function(type, sortField, parentKey, cb) {
   }
   var q = {
     gt: indexedKeyPrefix.concat(null),
-    lt: indexedKeyPrefix.concat(undefined),
-    limit: 1
+    lt: indexedKeyPrefix.concat(undefined)
   };
 
+  if (meta === 'first') {
+    q.limit = 1;
+  }
+  else if (meta === 'last') {
+    q.limit = 1;
+    q.reverse = true;
+  }
+
   var key = null;
+  var count = 0;
   self.tree.indexed.createReadStream(q).on('data', function(ch) {
     // covers both pri and sec indexes
+    count += 1;
     key = [ch.key[1], ch.key[ch.key.length - 1]];
   }).on('end', function() {
-    self.tree.get(key, cb);
+    if (meta === 'count') cb(null, count);
+    else self.tree.get(key, cb);
   });
-};
-
-TreeDBIndexer.prototype.last = function(type, parentKey, cb) {
-  if (typeof parentKey === 'function') {
-    cb = parentKey;
-    parentKey = false;
-  }
-  if (!parentKey || typeof parentKey !== 'object') parentKey = false;
-  if (!cb) cb = noop;
 };
 function noop(){};
 

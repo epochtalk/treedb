@@ -60,13 +60,6 @@ TreeDB.prototype.get = function(key, cb) {
   });
 };
 
-// metadata
-TreeDB.prototype.meta = function(type, parentType, opts, cb) {
-  var self = this;
-  // meta keys
-
-}
-
 TreeDB.prototype.nodes = function(type, opts) {
   var self = this;
   var query;
@@ -144,12 +137,8 @@ TreeDB.prototype.addSecondaryIndex = function(type, parentType, field, cb) {
   this.indexer.addSecondaryIndex(type, parentType, field, cb);
 };
 
-TreeDB.prototype.first = function(type, sortField, parentKey, cb) {
-  this.indexer.first(type, sortField, parentKey, cb);
-};
-
-TreeDB.prototype.last = function(type, sortField, parentKey, cb) {
-  this.indexer.first(type, sortField, parentKey, cb);
+TreeDB.prototype.metadata = function(meta, type, sortField, parentKey, cb) {
+  this.indexer.metadata(meta, type, sortField, parentKey, cb);
 };
 
 function noop(){};
