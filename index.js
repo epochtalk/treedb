@@ -18,7 +18,7 @@ function TreeDB(db, opts) {
   this.indexes = this.db.sublevel('indexes');
   this.indexed = this.db.sublevel('indexed');
   this.meta = this.db.sublevel('meta');
-  this.indexer = new TreeDBIndexer(this.db);
+  this.indexer = new TreeDBIndexer(this);
 };
 
 TreeDB.prototype.store = function(obj, parentKey, cb) {

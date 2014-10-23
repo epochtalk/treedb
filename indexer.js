@@ -2,19 +2,16 @@ module.exports = TreeDBIndexer;
 var trigger = require('level-trigger');
 var async = require('async');
 
-function TreeDBIndexer(db) {
-  if (!(this instanceof TreeDBIndexer)) return new TreeDBIndexer(db);
-  this.indexes = db.sublevel('indexes');
-  this.indexed = db.sublevel('indexed');
-  this.meta = db.sublevel('meta');
-  this.roots = db.sublevel('roots');
+function TreeDBIndexer(tree) {
+  if (!(this instanceof TreeDBIndexer)) return new TreeDBIndexer(tree);
   var self = this;
-  trigger(db, 'content-trigger', function (ch) {
+  self.tree = tree;
+  trigger(tree.db, 'content-trigger', function (ch) {
     var key = ch.key;
     if (ch.type === 'put') {
       var q = {gt: key.concat(null), lt: key.concat(undefined), limit: 1};
       var parentKey = null;
-      self.roots.createReadStream(q).on('data', function(ch) {
+      self.tree.roots.createReadStream(q).on('data', function(ch) {
         parentKey = [ch.key[2], ch.key[3]];
       }).on('end', function() {
         self.putIndexes(ch, parentKey);
@@ -33,7 +30,7 @@ TreeDBIndexer.prototype.addIndex = function(type, field, cb) {
   var key = ['pri', type, field];
   rows.push({type: 'put', key: key, value: 0});
   var storeRequests = [];
-  storeRequests.push(function(cb) { self.indexes.batch(rows, cb); });
+  storeRequests.push(function(cb) { self.tree.indexes.batch(rows, cb); });
   commit();
   function commit() {
     async.parallel(storeRequests, function(err) { cb(err, key); });
@@ -47,7 +44,7 @@ TreeDBIndexer.prototype.addSecondaryIndex = function(type, parentType, field, cb
   var key = ['sec', type, parentType, field];
   rows.push({type: 'put', key: key, value: 0});
   var storeRequests = [];
-  storeRequests.push(function(cb) { self.indexes.batch(rows, cb); });
+  storeRequests.push(function(cb) { self.tree.indexes.batch(rows, cb); });
   commit();
   function commit() {
     async.parallel(storeRequests, function(err) { cb(err, key); });
@@ -84,7 +81,7 @@ TreeDBIndexer.prototype.putIndexes = function(ch, parentKey, cb) {
       rows.push(row);
     });
 
-    storeRequests.push(function(cb) { self.indexed.batch(rows, cb); });
+    storeRequests.push(function(cb) { self.tree.indexed.batch(rows, cb); });
     commit();
   });
   function commit() {
@@ -93,7 +90,7 @@ TreeDBIndexer.prototype.putIndexes = function(ch, parentKey, cb) {
 };
 
 TreeDBIndexer.prototype.indexQuery = function(q, cb) {
-  var indexStream = this.indexes.createReadStream(q);
+  var indexStream = this.tree.indexes.createReadStream(q);
   var indexes = [];
   indexStream.on('data', function(index) {
     indexes.push(index);
