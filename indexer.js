@@ -39,9 +39,7 @@ TreeDBIndexer.prototype.addIndex = function(type, field, cb) {
   var key = ['pri', type, field];
   rows.push({type: 'put', key: key, value: 0});
   var storeRequests = [];
-  storeRequests.push(function(cb) {
-    self.indexes.batch(rows, cb);
-  });
+  storeRequests.push(function(cb) { self.indexes.batch(rows, cb); });
   commit();
   function commit() {
     async.parallel(storeRequests, function(err) { cb(err, key); });
@@ -55,9 +53,7 @@ TreeDBIndexer.prototype.addSecondaryIndex = function(type, parentType, field, cb
   var key = ['sec', type, parentType, field];
   rows.push({type: 'put', key: key, value: 0});
   var storeRequests = [];
-  storeRequests.push(function(cb) {
-    self.indexes.batch(rows, cb);
-  });
+  storeRequests.push(function(cb) { self.indexes.batch(rows, cb); });
   commit();
   function commit() {
     async.parallel(storeRequests, function(err) { cb(err, key); });
@@ -75,8 +71,23 @@ TreeDBIndexer.prototype.putIndexes = function(ch, parentKey, cb) {
   var metaRows = [];
   var storeRequests = [];
   var key = ch.key;
-  var id = key[1];
+  var type = ch.key[0];
   var val = ch.value;
+  var id = key[1];
+
+    self.meta.get([type, 'count'], function(err, count) {
+      if (count) {
+        count += 1;
+      }
+      else {
+        count = 1;
+      }
+      console.log('count: ' + count);
+      console.log([type, 'count']);
+      self.meta.put([type, 'count'], count, cb);
+    });
+
+
   self.indexesOf(key, function(err, indexes) {
     indexes.forEach(function(index) {
       // gets all primary/secondary indexes
@@ -92,9 +103,7 @@ TreeDBIndexer.prototype.putIndexes = function(ch, parentKey, cb) {
       var row = {type: 'put', key: indexedKey, value: key};
       rows.push(row);
     });
-    storeRequests.push(function(cb) {
-      self.indexed.batch(rows, cb);
-    });
+    storeRequests.push(function(cb) { self.indexed.batch(rows, cb); });
     commit();
   });
   function commit() {
