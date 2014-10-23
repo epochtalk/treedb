@@ -11,7 +11,7 @@ function TreeDBIndexer(db) {
   var self = this;
   trigger(db, 'content-trigger', function (ch) {
     var key = ch.key;
-    if (ch.type === 'put') { 
+    if (ch.type === 'put') {
       var q = {
         gt: key.concat(null),
         lt: key.concat(undefined),
@@ -74,20 +74,6 @@ TreeDBIndexer.prototype.putIndexes = function(ch, parentKey, cb) {
   var type = ch.key[0];
   var val = ch.value;
   var id = key[1];
-
-    self.meta.get([type, 'count'], function(err, count) {
-      if (count) {
-        count += 1;
-      }
-      else {
-        count = 1;
-      }
-      console.log('count: ' + count);
-      console.log([type, 'count']);
-      self.meta.put([type, 'count'], count, cb);
-    });
-
-
   self.indexesOf(key, function(err, indexes) {
     indexes.forEach(function(index) {
       // gets all primary/secondary indexes
@@ -103,6 +89,7 @@ TreeDBIndexer.prototype.putIndexes = function(ch, parentKey, cb) {
       var row = {type: 'put', key: indexedKey, value: key};
       rows.push(row);
     });
+
     storeRequests.push(function(cb) { self.indexed.batch(rows, cb); });
     commit();
   });
