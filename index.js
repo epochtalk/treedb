@@ -55,7 +55,9 @@ TreeDB.prototype.store = function(obj, parentKey, cb) {
 
 TreeDB.prototype.get = function(key, cb) {
   if (!cb) cb = noop;
-  this.db.get(key, cb);
+  this.db.get(key, function(err, value) {
+    return cb(err, {key: key, value: value});
+  });
 };
 
 // metadata
@@ -140,6 +142,14 @@ TreeDB.prototype.addIndex = function(type, field, cb) {
 
 TreeDB.prototype.addSecondaryIndex = function(type, parentType, field, cb) {
   this.indexer.addSecondaryIndex(type, parentType, field, cb);
+};
+
+TreeDB.prototype.first = function(type, sortField, parentKey, cb) {
+  this.indexer.first(type, sortField, parentKey, cb);
+};
+
+TreeDB.prototype.last = function(type, sortField, parentKey, cb) {
+  this.indexer.first(type, sortField, parentKey, cb);
 };
 
 function noop(){};

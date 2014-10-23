@@ -13,7 +13,7 @@ tree.addIndex('board', 'created_at', function(err, key) {
   });
 });
 
-var count = 5;
+var count = 3;
 function start() {
   test('store', function(t) {
     seed(count, function(err) {
@@ -48,7 +48,22 @@ function start() {
         });
       });
       t.end();
-      teardown();
+    });
+  });
+  test('meta for boards', function(t) {
+    tree.first('board', 'created_at', function(err, board) {
+      console.log('first board: ' + board.key[1]);
+
+      // grabbing boards in order
+      var boards = [];
+      tree.nodes('board', {indexedField:'created_at'}).on('data', function(ch) {
+        boards.push(ch);
+      }).on('end', function() {
+        t.ok(boards[0].key[1] === board.key[1],
+          'first board retrieved with id: ' + board.key[1]);
+        t.end();
+        teardown();
+      });
     });
   });
 }

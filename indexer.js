@@ -115,6 +115,46 @@ TreeDBIndexer.prototype.indexesOf = function(key, cb) {
     return cb(err, indexes);
   });
 };
+TreeDBIndexer.prototype.first = function(type, sortField, parentKey, cb) {
+  if (typeof parentKey === 'function') {
+    cb = parentKey;
+    parentKey = false;
+  }
+  if (!parentKey || typeof parentKey !== 'object') parentKey = false;
+  if (!cb) cb = noop;
+  var self = this;
+  // ['pri', 'board', 'created_at', 1381891311050, '-y_Jrwa1B']
+  // ['sec', 'thread', 'board', 'Wk-hvQmvHr', 'updated_at', 1415323275770,
+  // 'ZJc6RZ48Hr']
+  var indexedKeyPrefix = null;
+  if (parentKey) {
+    indexedKeyPrefix = ['sec', type, parentKey[0], parentKey[1], sortField];
+  }
+  else {
+    indexedKeyPrefix = ['pri', type, sortField];
+  }
+  var q = {
+    gt: indexedKeyPrefix.concat(null),
+    lt: indexedKeyPrefix.concat(undefined),
+    limit: 1
+  };
 
+  var key = null;
+  self.tree.indexed.createReadStream(q).on('data', function(ch) {
+    // covers both pri and sec indexes
+    key = [ch.key[1], ch.key[ch.key.length - 1]];
+  }).on('end', function() {
+    self.tree.get(key, cb);
+  });
+};
+
+TreeDBIndexer.prototype.last = function(type, parentKey, cb) {
+  if (typeof parentKey === 'function') {
+    cb = parentKey;
+    parentKey = false;
+  }
+  if (!parentKey || typeof parentKey !== 'object') parentKey = false;
+  if (!cb) cb = noop;
+};
 function noop(){};
 
