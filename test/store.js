@@ -52,8 +52,6 @@ function start() {
   });
   test('metadata: first for boards', function(t) {
     tree.metadata('first', 'board', 'created_at', function(err, board) {
-      console.log('first board: ' + board.key[1]);
-
       // grabbing boards in order
       var boards = [];
       tree.nodes('board', {indexedField:'created_at'}).on('data', function(ch) {
@@ -67,7 +65,6 @@ function start() {
   });
   test('metadata: last for boards', function(t) {
     tree.metadata('last', 'board', 'created_at', function(err, board) {
-      console.log('last board: ' + board.key[1]);
       // grabbing boards in order
       var boards = [];
       tree.nodes('board', {indexedField:'created_at'}).on('data', function(ch) {
