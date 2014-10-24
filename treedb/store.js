@@ -1,6 +1,6 @@
 var path = require('path');
 var TreeDB = require(path.join(__dirname, 'treedb'));
-var keys = require(path.join(__dirname, 'keys'));
+var keys = require(path.join(__dirname, '..', 'keys'));
 var async = require('async');
 
 TreeDB.prototype.store = function(obj, parentKey, cb) {

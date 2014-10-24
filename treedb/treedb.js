@@ -1,7 +1,7 @@
 var path = require('path');
 var sublevel = require('level-sublevel/bytewise');
 var bytewise = require('bytewise');
-var TreeDBIndexer = require(path.join(__dirname, 'indexer'));
+var TreeDBIndexer = require(path.join(__dirname, '..', 'indexer'));
 
 var TreeDB = module.exports = function TreeDB(db, opts) {
   if (!(this instanceof TreeDB)) return new TreeDB(db, opts);
