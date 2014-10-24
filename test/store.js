@@ -116,7 +116,7 @@ function queryBoardsByIndex(cb) {
 };
 
 function teardown() {
-  var dbPath = path.join('/tmp', '.treedb');
+  var dbPath = path.join('/', 'tmp', '.treedb');
   rimraf(dbPath, function(error){
     console.log('teardown: removed ' + dbPath);
   });
