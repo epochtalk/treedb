@@ -16,3 +16,4 @@ var TreeDB = module.exports = function TreeDB(db, opts) {
 };
 
 require(path.join(__dirname, 'store'));
+require(path.join(__dirname, 'get'));
