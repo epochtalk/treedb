@@ -18,8 +18,8 @@ function testStoreHierarchy(count) {
     var board = helper.genBoard();
     boards.push(board);
     storeRequests.push(function(cb) {
-      tree.store(board, function(err, boardKey) {
-        storeThreads(boardKey, count, cb);
+      tree.store(board, function(err, boardObject) {
+        storeThreads(boardObject.key, count, cb);
       });
     });
   }
@@ -38,7 +38,7 @@ function storeThreads(boardKey, count, cb) {
     var thread = helper.genThread();
     threads.push(thread);
     storeRequests.push(function(cb) {
-      tree.store(thread, boardKey, function(err, threadKey) {
+      tree.store(thread, boardKey, function(err, threadObject) {
         return cb(err, thread);
       });
     });
