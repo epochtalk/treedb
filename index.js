@@ -7,9 +7,6 @@ require(path.join(__dirname, 'nodes'));
 require(path.join(__dirname, 'children'));
 require(path.join(__dirname, 'add-index'));
 require(path.join(__dirname, 'add-secondary-index'));
-
-TreeDB.prototype.metadata = function(meta, type, sortField, parentKey, cb) {
-  this.indexer.metadata(meta, type, sortField, parentKey, cb);
-};
+require(path.join(__dirname, 'metadata'));
 
 module.exports = TreeDB;
