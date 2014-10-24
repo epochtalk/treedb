@@ -14,3 +14,5 @@ var TreeDB = module.exports = function TreeDB(db, opts) {
   this.meta = this.db.sublevel('meta');
   this.indexer = new TreeDBIndexer(this);
 };
+
+require(path.join(__dirname, 'store'));
