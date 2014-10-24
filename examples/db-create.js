@@ -1,12 +1,13 @@
+var path = require('path');
 var levelup = require('levelup');
-var TreeDB = require('../');
+var TreeDB = require(path.join(__dirname, '..'));
 var crypto = require('crypto');
 var shasum = crypto.createHash('sha256');
 var rimraf = require('rimraf');
 
 function testCreate() {
   console.log('creation test.');
-  newDb = levelup('./.tdb');
+  newDb = levelup(path.join(__dirname, '.tdb'));
   var tree = new TreeDB(newDb);
   db = tree.db;
   db.put('testkey', 'LevelUP', function (err) {
@@ -28,7 +29,7 @@ function testCreate() {
     if (err) return console.log('Ooops!', err)
     console.log('Great success dear leader!');
     tree.nodes(2000).on('data', console.log);
-    rimraf('./.tdb', function(error){
+    rimraf(path.join(__dirname, '.tdb'), function(error){
       console.log('removed ./.tdb.');
       // testHash();
     });
