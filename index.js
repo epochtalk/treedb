@@ -3,6 +3,8 @@ var readonly = require('read-only-stream');
 var defined = require('defined');
 var through2 = require('through2');
 var TreeDB = require(path.join(__dirname, 'treedb'));
+require(path.join(__dirname, 'store'));
+require(path.join(__dirname, 'get'));
 
 TreeDB.prototype.nodes = function(type, opts) {
   var self = this;
