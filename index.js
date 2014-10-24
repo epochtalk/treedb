@@ -1,25 +1,9 @@
-module.exports = TreeDB;
 var path = require('path');
-var sublevel = require('level-sublevel/bytewise');
-var bytewise = require('bytewise');
 var readonly = require('read-only-stream');
 var defined = require('defined');
 var async = require('async');
 var through2 = require('through2');
-var TreeDBIndexer = require(path.join(__dirname, 'indexer'));
 var keys = require(path.join(__dirname, 'keys'));
-
-function TreeDB(db, opts) {
-  if (!(this instanceof TreeDB)) return new TreeDB(db, opts);
-  if (!opts) opts = {};
-  this.db = sublevel(db, {keyEncoding: bytewise, valueEncoding: 'json'});
-  this.branches = this.db.sublevel('branches');
-  this.roots = this.db.sublevel('roots');
-  this.indexes = this.db.sublevel('indexes');
-  this.indexed = this.db.sublevel('indexed');
-  this.meta = this.db.sublevel('meta');
-  this.indexer = new TreeDBIndexer(this);
-};
 
 TreeDB.prototype.store = function(obj, parentKey, cb) {
   if (typeof parentKey === 'function') {
@@ -59,6 +43,7 @@ TreeDB.prototype.get = function(key, cb) {
     return cb(err, {key: key, value: value});
   });
 };
+var TreeDB = require(path.join(__dirname, 'treedb'));
 
 TreeDB.prototype.nodes = function(type, opts) {
   var self = this;
@@ -143,3 +128,4 @@ TreeDB.prototype.metadata = function(meta, type, sortField, parentKey, cb) {
 
 function noop(){};
 
+module.exports = TreeDB;
