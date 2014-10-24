@@ -5,10 +5,7 @@ require(path.join(__dirname, 'store'));
 require(path.join(__dirname, 'get'));
 require(path.join(__dirname, 'nodes'));
 require(path.join(__dirname, 'children'));
-
-TreeDB.prototype.addIndex = function(type, field, cb) {
-  this.indexer.addIndex(type, field, cb);
-};
+require(path.join(__dirname, 'add-index'));
 
 TreeDB.prototype.addSecondaryIndex = function(type, parentType, field, cb) {
   this.indexer.addSecondaryIndex(type, parentType, field, cb);
