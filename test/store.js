@@ -28,6 +28,10 @@ function start() {
         t.ok(board.created_at >= lastCreatedAt, 'created_at order check: '
           + board.created_at);
         lastCreatedAt = board.created_at;
+        // Test metatada
+        tree.metadata({key: ch.key, field: 'postCount', callback: function(err, value) {
+          console.log('tree ' + ch.key + ' = ' + value);
+        }});
       });
       t.end();
     });
@@ -44,51 +48,15 @@ function start() {
             t.ok(thread.updated_at >= lastUpdatedAt, 'updated_at order check: '
               + thread.updated_at);
             lastUpdatedAt = thread.updated_at;
+            // Test metatada
+            tree.metadata({key: ch.key, field: 'postCount', callback: function(err, value) {
+              console.log('tree ' + ch.key + ' = ' + value);
+            }});
           });
         });
       });
       t.end();
-    });
-  });
-  test('metadata: first for boards', function(t) {
-    tree.metadata('first', 'board', 'created_at', function(err, board) {
-      // grabbing boards in order
-      var boards = [];
-      tree.nodes('board', {indexedField:'created_at'}).on('data', function(ch) {
-        boards.push(ch);
-      }).on('end', function() {
-        t.ok(boards[0].key[1] === board.key[1],
-          'first board retrieved with id: ' + board.key[1]);
-        t.end();
-      });
-    });
-  });
-  test('metadata: last for boards', function(t) {
-    tree.metadata('last', 'board', 'created_at', function(err, board) {
-      // grabbing boards in order
-      var boards = [];
-      tree.nodes('board', {indexedField:'created_at'}).on('data', function(ch) {
-        boards.push(ch);
-      }).on('end', function() {
-        t.ok(boards[boards.length - 1].key[1] === board.key[1],
-          'last board retrieved with id: ' + board.key[1]);
-        t.end();
-      });
-    });
-  });
-
-  test('metadata: count for boards', function(t) {
-    tree.metadata('count', 'board', 'created_at', function(err, count) {
-      // grabbing boards in order
-      var boards = [];
-      tree.nodes('board', {indexedField:'created_at'}).on('data', function(ch) {
-        boards.push(ch);
-      }).on('end', function() {
-        t.ok(boards.length === count,
-          'boards total: ' + count);
-        t.end();
-        teardown();
-      });
+      teardown();
     });
   });
 }
