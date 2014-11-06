@@ -59,7 +59,6 @@ TreeDBIndexer.prototype.putIndexes = function(ch, parentKey, cb) {
   if (!cb) cb = noop;
   var self = this;
   var rows = [];
-  var metaRows = [];
   var storeRequests = [];
   var key = ch.key;
   var type = ch.key[0];
@@ -115,51 +114,6 @@ TreeDBIndexer.prototype.indexesOf = function(key, cb) {
     return cb(err, indexes);
   });
 };
-TreeDBIndexer.prototype.metadata = function(meta, type, sortField, parentKey, cb) {
-  if (typeof parentKey === 'function') {
-    cb = parentKey;
-    parentKey = false;
-  }
-  if (!parentKey || typeof parentKey !== 'object') parentKey = false;
-  if (!cb) cb = noop;
-  if (meta !== 'first' && meta !== 'last' && meta !== 'count') {
-    return cb(new Error('unknown metadata'), null);
-  }
 
-  var self = this;
-  // ['pri', 'board', 'created_at', 1381891311050, '-y_Jrwa1B']
-  // ['sec', 'thread', 'board', 'Wk-hvQmvHr', 'updated_at', 1415323275770,
-  // 'ZJc6RZ48Hr']
-  var indexedKeyPrefix = null;
-  if (parentKey) {
-    indexedKeyPrefix = ['sec', type, parentKey[0], parentKey[1], sortField];
-  }
-  else {
-    indexedKeyPrefix = ['pri', type, sortField];
-  }
-  var q = {
-    gt: indexedKeyPrefix.concat(null),
-    lt: indexedKeyPrefix.concat(undefined)
-  };
-
-  if (meta === 'first') {
-    q.limit = 1;
-  }
-  else if (meta === 'last') {
-    q.limit = 1;
-    q.reverse = true;
-  }
-
-  var key = null;
-  var count = 0;
-  self.tree.indexed.createReadStream(q).on('data', function(ch) {
-    // covers both pri and sec indexes
-    count += 1;
-    key = [ch.key[1], ch.key[ch.key.length - 1]];
-  }).on('end', function() {
-    if (meta === 'count') cb(null, count);
-    else self.tree.get(key, cb);
-  });
-};
 function noop(){};
 
