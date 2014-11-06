@@ -29,8 +29,8 @@ function start() {
           + board.created_at);
         lastCreatedAt = board.created_at;
         // Test metatada
-        tree.metadata({key: ch.key, field: 'postCount', callback: function(err, value) {
-          console.log('tree ' + ch.key + ' = ' + value);
+        tree.metadata({key: ch.key, field: 'postCount', callback: function(err, postCount) {
+          t.ok(postCount === count*count, 'postCount check: ' + postCount);
         }});
       });
       t.end();
@@ -49,8 +49,8 @@ function start() {
               + thread.updated_at);
             lastUpdatedAt = thread.updated_at;
             // Test metatada
-            tree.metadata({key: ch.key, field: 'postCount', callback: function(err, value) {
-              console.log('tree ' + ch.key + ' = ' + value);
+            tree.metadata({key: ch.key, field: 'postCount', callback: function(err, postCount) {
+              t.ok(postCount === count, 'postCount check: ' + postCount);
             }});
           });
         });
