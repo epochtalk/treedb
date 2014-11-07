@@ -17,7 +17,7 @@ var count = 3;
 function start() {
   test('store', function(t) {
     seed(count, function(err) {
-      t.end();
+      setTimeout(t.end, 1000);
     });
   });
   test('query boards by pri index', function(t) {
@@ -30,8 +30,7 @@ function start() {
         lastCreatedAt = board.created_at;
         // Test metatada
         tree.metadata({key: ch.key, field: 'postCount', callback: function(err, postCount) {
-          //t.ok(postCount === count*count, 'postCount check: ' + postCount);
-          t.ok(!isNaN(postCount), 'postCount check: ' + postCount);
+          t.ok(postCount === count*count, ch.key + ' postCount check: ' + postCount);
         }});
       });
       t.end();
@@ -51,8 +50,7 @@ function start() {
             lastUpdatedAt = thread.updated_at;
             // Test metatada
             tree.metadata({key: ch.key, field: 'postCount', callback: function(err, postCount) {
-              //t.ok(postCount === count, 'postCount check: ' + postCount);
-              t.ok(!isNaN(postCount), 'postCount check: ' + postCount);
+              t.ok(postCount === count, ch.key + ' postCount check: ' + postCount);
             }});
           });
         });
