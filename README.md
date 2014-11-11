@@ -1,5 +1,4 @@
-TreeDB
-======
+# TreeDB [![Build Status](https://travis-ci.org/epochtalk/treedb.svg?branch=master)](https://travis-ci.org/epochtalk/treedb)
 
 LevelDB backend for hierarchical data.
 
