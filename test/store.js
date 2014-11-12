@@ -32,6 +32,9 @@ function start() {
         tree.metadata({key: ch.key, field: 'postCount', callback: function(err, postCount) {
           t.ok(postCount === count*count, ch.key + ' postCount check: ' + postCount);
         }});
+        tree.metadata({key: ch.key, field: 'threadCount', callback: function(err, threadCount) {
+          t.ok(threadCount === count, ch.key + ' threadCount check: ' + threadCount);
+        }});
       });
       t.end();
     });
