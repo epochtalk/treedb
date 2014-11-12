@@ -11,9 +11,14 @@ function seedForum(count, cb) {
 
   boards.forEach(function(board) {
     storeRequests.push(function(cb) {
-      tree.store(board, function(err, ch) {
-        storeThreads(ch.key, count, cb);
-      });
+      var storeOptions = {
+        object: board,
+        type: 'board',
+        callback: function(err, ch) {
+          storeThreads(ch.key, count, cb);
+        }
+      };
+      tree.store(storeOptions);
     });
   });
   async.parallel(storeRequests, cb);
@@ -24,9 +29,15 @@ function storeThreads(boardKey, count, cb) {
   var storeRequests = [];
   threads.forEach(function(thread) {
     storeRequests.push(function(cb) {
-      tree.store(thread, boardKey, function(err, ch) {
-        storePosts(ch.key, count, cb);
-      });
+      var storeOptions = {
+        object: thread,
+        type: 'thread',
+        parentKey: boardKey,
+        callback: function(err, ch) {
+          storePosts(ch.key, count, cb);
+        }
+      };
+      tree.store(storeOptions);
     });
   });
   async.parallel(storeRequests, cb);
@@ -37,9 +48,15 @@ function storePosts(threadKey, count, cb) {
   var storeRequests = [];
   posts.forEach(function(post) {
     storeRequests.push(function(cb) {
-      tree.store(post, threadKey, function(err, ch) {
-        cb(err, post);
-      });
+      var storeOptions = {
+        object: post,
+        type: 'post',
+        parentKey: threadKey,
+        callback: function(err, ch) {
+          cb(err, post);
+        }
+      };
+      tree.store(storeOptions);
     });
   });
   async.parallel(storeRequests, cb);
