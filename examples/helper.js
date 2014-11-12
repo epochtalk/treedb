@@ -9,7 +9,6 @@ var rimraf = require('rimraf');
 
 exp.genBoard = function() {
   var board = {
-    type: 'board',
     title: 'All About ' + faker.hacker.adjective() + ' ' + faker.hacker.noun() + 's',
     desc: faker.lorem.paragraph(),
     created_at: faker.date.past().getTime()
@@ -19,7 +18,6 @@ exp.genBoard = function() {
 
 exp.genThread = function() {
   var thread = {
-    type: 'thread',
     subject: faker.hacker.adjective() + ' ' + faker.hacker.adjective() + ' ' + faker.hacker.noun(),
     created_at: faker.date.recent().getTime()
   };
@@ -28,7 +26,6 @@ exp.genThread = function() {
 
 exp.genPost = function() {
   var post = {
-    type: 'post',
     title: faker.hacker.adjective() + ' ' + faker.hacker.noun(),
     body: faker.lorem.paragraph(),
     created_at: faker.date.future().getTime()
