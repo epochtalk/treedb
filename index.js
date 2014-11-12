@@ -132,12 +132,9 @@ TreeDB.prototype.children = function(parentKey, type, opts) {
   }
 };
 
-TreeDB.prototype.addIndex = function(type, field, cb) {
-  this.indexer.addIndex(type, field, cb);
-};
-
-TreeDB.prototype.addSecondaryIndex = function(type, parentType, field, cb) {
-  this.indexer.addSecondaryIndex(type, parentType, field, cb);
+// options: {type, parentType, field, callback}
+TreeDB.prototype.addIndex = function(options) {
+  this.indexer.addIndex(options);
 };
 
 // options:  key, field, callback
