@@ -6,12 +6,9 @@ var rimraf = require('rimraf');
 var gen = require(path.join(__dirname, 'gen'));
 var tree = require(path.join(__dirname, 'test-treedb'));
 var seed = require(path.join(__dirname, 'seed'));
+var indexes = require(path.join(__dirname, 'sample_indexes'));
 
-tree.addIndex('board', 'created_at', function(err, key) {
-  tree.addSecondaryIndex('thread', 'board', 'updated_at', function(err, key) {
-    start();
-  });
-});
+tree.addIndexes({indexes: indexes, callback: start});
 
 var count = 3;
 function start() {
