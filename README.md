@@ -10,13 +10,17 @@ Storing an object:
 ```js
 var db = require('levelup')('/tmp/treedb');
 var tree = require('treedb')(db);
-tree.store({
+var storeOptions = {
   type: 'person',
-  name: 'Foo Bar',
-  slogan: 'hello world'
-}, function(err, val) {
-  console.log(val);
-});
+  object: {
+    name: 'Foo Bar',
+    slogan: 'hello world'
+  },
+  callback: function(err, val) {
+    console.log(val);
+  }
+};
+tree.store(storeOptions);
 
 ```
 
@@ -61,12 +65,22 @@ var tree = require('treedb')(db)
 
 Create a new `treedb` from a leveldb handle `db` and set it to the `tree` handle.
 
-tree.store(obj, parentKey, cb)
+tree.store(options)
 ------------------------------
+
+```
+options: {
+  object: Object,
+  type: String,
+  parentKey: [<type>, <id>],
+  callback: Function
+}
+```
 
 If `parentKey` is null, the `obj` that is stored will be a top level object.
 
 -	`obj` - object to store
+-	`type` - type of object to store as a String
 -	`parentKey` - key of the parent object of the `obj`
 -	`cb` - callback function that is called with `function(err, obj)`
 
