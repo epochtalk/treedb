@@ -7,7 +7,7 @@ var helper = require(path.join(__dirname, 'helper'));
 var newDb = levelup(path.join(__dirname, '.tdb'));
 var tree = new TreeDB(newDb);
 var db = tree.db;
-tree.addIndex('board', 'created_at');
+tree.addIndex({type: 'board', field: 'created_at'});
 
 function noop() {};
 
