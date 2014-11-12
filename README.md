@@ -92,11 +92,44 @@ Return a readable object stream `rstream` with the contents of the nodes of the 
 var rstream = tree.children(key, opts)
 --------------------------------------
 
-tree.addIndex(type, field, cb)
+tree.addIndex(options)
 ------------------------------
+
+```
+options: {
+  type: String,
+  parentType: <String>,
+  field: String,
+  callback: Function
+}
+```
+
+If parentType is provided, creates a secondary index.
+
+tree.addIndexes(options)
+------------------------------
+
+```
+options: {
+  indexes: [<index>, ...],
+  callback: Function
+}
+```
+
+```
+index:  {
+  type: String,
+  parentType: <String>,
+  field: String
+}
+```
+
+If parentType is provided, creates a secondary index.
 
 tree.addSecondaryIndex(type, parentType, field, cb)
 ---------------------------------------------------
+
+Deprecated: Instead, use tree.addIndex({..., parentType, ...})
 
 Install
 =======
