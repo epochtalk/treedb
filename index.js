@@ -142,7 +142,7 @@ TreeDB.prototype.addIndexes = function(options) {
   var self = this;
   async.each(options.indexes, function(index, callback) {
     index.callback = callback;
-    self.addIndex(index);
+    self.indexer.addIndex(index);
   }, options.callback);
 };
 
