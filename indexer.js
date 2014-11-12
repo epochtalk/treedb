@@ -23,31 +23,25 @@ function TreeDBIndexer(tree) {
   function (value, done) { done(); });
 };
 
-TreeDBIndexer.prototype.addIndex = function(type, field, cb) {
-  if (!cb) cb = noop;
+// options: {type, parentType, field, callback}
+TreeDBIndexer.prototype.addIndex = function(options) {
+  var type = options.type;
+  var parentType = options.parentType || false;
+  var field = options.field;
+  var callback = options.callback || noop;
+
   var self = this;
   var rows = [];
   var key = ['pri', type, field];
+  if (parentType) {
+    key = ['sec', type, parentType, field];
+  }
   rows.push({type: 'put', key: key, value: 0});
   var storeRequests = [];
   storeRequests.push(function(cb) { self.tree.indexes.batch(rows, cb); });
   commit();
   function commit() {
-    async.parallel(storeRequests, function(err) { cb(err, key); });
-  };
-};
-
-TreeDBIndexer.prototype.addSecondaryIndex = function(type, parentType, field, cb) {
-  if (!cb) cb = noop;
-  var self = this;
-  var rows = [];
-  var key = ['sec', type, parentType, field];
-  rows.push({type: 'put', key: key, value: 0});
-  var storeRequests = [];
-  storeRequests.push(function(cb) { self.tree.indexes.batch(rows, cb); });
-  commit();
-  function commit() {
-    async.parallel(storeRequests, function(err) { cb(err, key); });
+    async.parallel(storeRequests, function(err) { callback(err, key); });
   };
 };
 
