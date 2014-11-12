@@ -20,19 +20,11 @@ var Meta = module.exports = function(tree, stuff) {
           var value = new self.controllers[type].model();
           var rows = [];
           rows.push({type: 'put', key: key, value: value});
-          self.tree.meta.batch(rows, function(err) {
-            if (err) {
-              console.log('batch error: ' + key);
-            }
-            else {
-              self.tree.meta.get(key, function(err, value) {
-              });
-            }
-          });
+          self.tree.meta.batch(rows);
         }
         // Call the onPut for the metadata
         if (self.controllers[type].onPut) {
-          self.controllers[type].onPut(key);
+          self.controllers[type].onPut({key: key, value: value});
         }
       };
     }
