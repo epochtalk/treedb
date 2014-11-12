@@ -11,7 +11,6 @@ var sleep = require('sleep');
 exp.board = function() {
   sleep.usleep(1000);
   var board = {
-    type: 'board',
     title: 'All About '
       + faker.hacker.adjective()
       + ' ' + faker.hacker.noun()
@@ -25,7 +24,6 @@ exp.board = function() {
 exp.thread = function() {
   sleep.usleep(1000);
   var thread = {
-    type: 'thread',
     subject: faker.hacker.adjective()
       + ' '
       + faker.hacker.adjective()
@@ -39,7 +37,6 @@ exp.thread = function() {
 exp.post = function() {
   sleep.usleep(1000);
   var post = {
-    type: 'post',
     title: faker.hacker.adjective() + ' ' + faker.hacker.noun(),
     body: faker.lorem.paragraph(),
     created_at: faker.date.future().getTime()
