@@ -23,19 +23,18 @@ function TreeDB(db, opts) {
   this.metaTreedb = new TreeDBMeta(this, opts.meta);
 };
 
-TreeDB.prototype.store = function(obj, parentKey, cb) {
-  if (typeof parentKey === 'function') {
-    cb = parentKey;
-    parentKey = false;
-  }
-  if (!parentKey || typeof parentKey !== 'object') parentKey = false;
-  if (!cb) cb = noop;
+// options: object, type, parentKey, callback
+TreeDB.prototype.store = function(options) {
+  var object = options.object;
+  var type = options.type;
+  var parentKey = options.parentKey || false;
+  var callback = options.callback || noop;
   var self = this;
   var rows = [];
   var cRels = [];
   var pRels = [];
-  var key = [obj.type, keys.hash()];
-  rows.push({type: 'put', key: key, value: obj});
+  var key = [type, keys.hash()];
+  rows.push({type: 'put', key: key, value: object});
   var storeRequests = [];
   if (parentKey) {
     // assumes parent already has been saved in the database
@@ -50,7 +49,7 @@ TreeDB.prototype.store = function(obj, parentKey, cb) {
   commit();
   function commit() {
     async.parallel(storeRequests, function(err) {
-      cb(err, {key: key, value: obj});
+      callback(err, {key: key, value: object});
     });
   };
 };
