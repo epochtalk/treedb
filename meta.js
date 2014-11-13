@@ -54,6 +54,11 @@ Meta.prototype.get = function(options) {
   var self = this;
   var key = options.key;
   self.operations.getValue({key: options.key, callback: function(err, value) {
-    options.callback(err, value[options.field]);
+    if (options.field) {
+      options.callback(err, value[options.field]);
+    }
+    else {
+      options.callback(err, value);
+    }
   }});
 };
