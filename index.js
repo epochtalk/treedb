@@ -63,13 +63,20 @@ TreeDB.prototype.get = function(key, cb) {
   });
 };
 
-TreeDB.prototype.nodes = function(type, opts) {
+// options: type, limit, (indexedField, (indexedValue))
+TreeDB.prototype.nodes = function(options) {
   var self = this;
+  var type = options.type;
   var query;
-  if (opts && opts.indexedField) {
+  if (options && options.indexedField) {
+    var queryPrefix = ['pri', type, options.indexedField];
+    if (options.indexedValue) {
+      queryPrefix = queryPrefix.concat(options.indexedValue);
+    }
     query = {
-      gt: ['pri', type, opts.indexedField, null],
-      lt: ['pri', type, opts.indexedField, undefined]
+      limit: options.limit || undefined,
+      gt: queryPrefix.concat(null),
+      lt: queryPrefix.concat(undefined)
     };
     return readonly(self.indexed.createReadStream(query)
     .pipe(through2.obj(function(ch, enc, cb) {
