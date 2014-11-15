@@ -26,11 +26,11 @@ function start() {
           + board.created_at);
         lastCreatedAt = board.created_at;
         // Test metatada
-        tree.metadata({key: ch.key, field: 'postCount', callback: function(err, postCount) {
-          t.equal(postCount, count*count, ch.key + ' postCount check: ' + postCount);
+        tree.metadata({key: ch.key, field: 'post_count', callback: function(err, post_count) {
+          t.equal(post_count, count*count, ch.key + ' post_count check: ' + post_count);
         }});
-        tree.metadata({key: ch.key, field: 'threadCount', callback: function(err, threadCount) {
-          t.equal(threadCount, count, ch.key + ' threadCount check: ' + threadCount);
+        tree.metadata({key: ch.key, field: 'thread_count', callback: function(err, thread_count) {
+          t.equal(thread_count, count, ch.key + ' thread_count check: ' + thread_count);
         }});
       });
       t.equal(boards.length, count, 'board count check');
@@ -50,8 +50,8 @@ function start() {
               + thread.updated_at);
             lastUpdatedAt = thread.updated_at;
             // Test metatada
-            tree.metadata({key: ch.key, field: 'postCount', callback: function(err, postCount) {
-              t.equal(postCount, count, ch.key + ' postCount check: ' + postCount);
+            tree.metadata({key: ch.key, field: 'post_count', callback: function(err, post_count) {
+              t.equal(post_count, count, ch.key + ' post_count check: ' + post_count);
             }});
           });
         });
