@@ -74,7 +74,7 @@ function queryThreadsBySecIndex(boardKey, cb) {
 };
 
 function queryBoardsByIndex(cb) {
-  var boardsStream = tree.nodes('board', {indexedField: 'created_at'});
+  var boardsStream = tree.nodes({type: 'board', indexedField: 'created_at'});
   var boards = [];
   boardsStream.on('data', function(ch) {
     boards.push(ch);
