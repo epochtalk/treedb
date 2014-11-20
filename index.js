@@ -98,13 +98,17 @@ TreeDB.prototype.nodes = function(options) {
   }
 };
 
-TreeDB.prototype.children = function(parentKey, type, opts) {
+// options: parentKey, type, indexedField
+TreeDB.prototype.children = function(options) {
+  var parentKey = options.parentKey;
+  var type = options.type;
+  var indexedField = options.indexedField;
   var self = this;
   var parentType = parentKey[0];
   var parentId = parentKey[1];
   var query;
-  if (opts && opts.indexedField) {
-    var queryKey = ['sec', type, parentKey[0], parentKey[1], opts.indexedField];
+  if (indexedField) {
+    var queryKey = ['sec', type, parentKey[0], parentKey[1], indexedField];
     query = {
       gt: queryKey.concat(null),
       lt: queryKey.concat(undefined)
