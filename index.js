@@ -25,11 +25,10 @@ function TreeDB(db, opts) {
   }
 };
 
-// options: object, type, [parentKeys || parentKey], [callback]
+// options: object, type, parentKeys, [callback]
 TreeDB.prototype.store = function(options) {
   var object = options.object;
   var type = options.type;
-  var parentKey = options.parentKey || false;
   var parentKeys = options.parentKeys || false;
   var callback = options.callback || noop;
   var self = this;
@@ -45,13 +44,6 @@ TreeDB.prototype.store = function(options) {
       cRels.push({type: 'put', key: parentKey.concat(key), value: 0});
       pRels.push({type: 'put', key: key.concat(parentKey), value: 0});
     });
-    storeRequests.push(function(cb) { self.branches.batch(cRels, cb); });
-    storeRequests.push(function(cb) { self.roots.batch(pRels, cb); });
-  }
-  else if (parentKey) {
-    // assumes parent already has been saved in the database
-    cRels.push({type: 'put', key: parentKey.concat(key), value: 0});
-    pRels.push({type: 'put', key: key.concat(parentKey), value: 0});
     storeRequests.push(function(cb) { self.branches.batch(cRels, cb); });
     storeRequests.push(function(cb) { self.roots.batch(pRels, cb); });
   }
