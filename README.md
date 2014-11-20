@@ -72,25 +72,61 @@ tree.store(options)
 options: {
   object: Object,
   type: String,
-  parentKey: [<type>, <id>],
+  parentKeys: [parentKey, parentKey, ...],
   callback: Function
 }
 ```
 
-If `parentKey` is null, the `obj` that is stored will be a top level object.
+`parentKey = [<type>, <id>]`
+
+If `parentKeys` is null, the `obj` that is stored will be a top level object.
 
 -	`obj` - object to store
 -	`type` - type of object to store as a String
 -	`parentKey` - key of the parent object of the `obj`
 -	`cb` - callback function that is called with `function(err, obj)`
 
-var rstream = tree.nodes(type, opts)
+var rstream = tree.nodes(options)
 ------------------------------------
 
-Return a readable object stream `rstream` with the contents of the nodes of the given `type`. - `type` - the type of the node as a string - `opts` - options object - `indexedField` - field to sort by
+````
+options: {
+  type: 'type',
+  limit: <Number>,
+  indexedField: <'field'>,
+  indexedValue: <value>
+}
+````
 
-var rstream = tree.children(key, opts)
+Return a readable object stream `rstream` with the contents of the nodes of the
+given `type`. - `type` - the type of the node as a string, `indexedField` -
+field to sort by and of the indexed value - `indexValue'
+
+var rstream = tree.children(options)
 --------------------------------------
+
+````
+options: {
+  parentKey: ['type', 'id'],
+  type: <'type'>,
+  indexedField: 'field'
+}
+````
+
+Returns a readable stream of children for `parentKey` of type `type`, indexed by `indexedField`.
+
+var rstream = tree.parents(options)
+--------------------------------------
+
+````
+options: {
+  key: ['type', 'id'],
+  parentType: <'parentType'>,
+  limit: <Number>
+}
+````
+
+Returns a readable stream of parents for `key` of type `parentType`.
 
 tree.addIndex(options)
 ------------------------------
