@@ -21,8 +21,8 @@ function testStoreHierarchy(count) {
       var storeOptions = {
         object: board,
         type: 'board',
-        callback: function(err, boardObject) {
-          storeThreads(boardObject.key, count, cb);
+        callback: function(options) {
+          storeThreads(options.key, count, cb);
         }
       };
       tree.store(storeOptions);
@@ -47,8 +47,8 @@ function storeThreads(boardKey, count, cb) {
         object: thread,
         type: 'thread',
         parentKey: boardKey,
-        callback: function(err, threadObject) {
-          return cb(err, thread);
+        callback: function(options) {
+          return cb(options.err, thread);
         }
       };
       tree.store(storeOptions);
@@ -67,7 +67,7 @@ function storeThreads(boardKey, count, cb) {
 function retrieveBoards() {
   console.log('retrieving boards...');
   var boardKeys = [];
-  tree.nodes('board')
+  tree.nodes({type: 'board'})
   .on('data', function(board) {
     process.stdout.write(board.key[1] + ' ');
     boardKeys.push(board.key);
@@ -83,7 +83,7 @@ function retrieveThreads(boardKeys) {
   var retrieveThreadsRequests = [];
   boardKeys.forEach(function(boardKey) {
     retrieveThreadsRequests.push(function(cb) {
-      tree.children(boardKey)
+      tree.children({parentKey: boardKey})
       .on('data', function(chunk) {
         // console.log(chunk.key);
       })
