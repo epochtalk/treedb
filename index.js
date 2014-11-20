@@ -51,7 +51,7 @@ TreeDB.prototype.store = function(options) {
   commit();
   function commit() {
     async.parallel(storeRequests, function(err) {
-      callback(err, {key: key, value: object});
+      callback({err: err, key: key, value: object});
     });
   };
 };
