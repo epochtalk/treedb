@@ -32,7 +32,7 @@ function storeThreads(boardKey, count, cb) {
       var storeOptions = {
         object: thread,
         type: 'thread',
-        parentKey: boardKey,
+        parentKeys: [boardKey],
         callback: function(options) {
           storePosts(options.key, count, cb);
         }
@@ -51,7 +51,7 @@ function storePosts(threadKey, count, cb) {
       var storeOptions = {
         object: post,
         type: 'post',
-        parentKey: threadKey,
+        parentKeys: [threadKey],
         callback: function(options) {
           cb(options.err, post);
         }
