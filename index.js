@@ -139,6 +139,30 @@ TreeDB.prototype.children = function(parentKey, type, opts) {
   }
 };
 
+// options: key, parentType, limit
+TreeDB.prototype.parents = function(options) {
+  var self = this;
+  var queryPrefix = [options.key];
+  if (options.parentType) {
+    queryPrefix = queryPrefix.concat(options.parentType);
+  }
+  var query = {
+    limit: options.limit || undefined,
+    gt: queryPrefix.concat(null),
+    lt: queryPrefix.concat(undefined)
+  };
+  return readonly(self.roots.createReadStream(query)
+  .pipe(through2.obj(function(ch, enc, cb) {
+    var self2 = this;
+    var dbKey = [ch.key[2], ch.key[3]];
+    self.db.get(dbKey, function(err, val) {
+      if (err) throw err;
+      self2.push({key: dbKey, value: val});
+      cb();
+    });
+  })));
+};
+
 // options: {type, parentType, field, callback}
 TreeDB.prototype.addIndex = function(options) {
   this.indexer.addIndex(options);
