@@ -63,7 +63,7 @@ function start() {
 }
 
 function queryThreadsBySecIndex(boardKey, cb) {
-  var threadsStream = tree.children(boardKey, 'thread', {indexedField: 'updated_at'});
+  var threadsStream = tree.children({parentKey: boardKey, type: 'thread', indexedField: 'updated_at'});
   var threads = [];
   threadsStream.on('data', function(ch) {
     threads.push(ch);
