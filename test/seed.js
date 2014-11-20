@@ -14,8 +14,8 @@ function seedForum(count, cb) {
       var storeOptions = {
         object: board,
         type: 'board',
-        callback: function(err, ch) {
-          storeThreads(ch.key, count, cb);
+        callback: function(options) {
+          storeThreads(options.key, count, cb);
         }
       };
       tree.store(storeOptions);
@@ -33,8 +33,8 @@ function storeThreads(boardKey, count, cb) {
         object: thread,
         type: 'thread',
         parentKey: boardKey,
-        callback: function(err, ch) {
-          storePosts(ch.key, count, cb);
+        callback: function(options) {
+          storePosts(options.key, count, cb);
         }
       };
       tree.store(storeOptions);
@@ -52,8 +52,8 @@ function storePosts(threadKey, count, cb) {
         object: post,
         type: 'post',
         parentKey: threadKey,
-        callback: function(err, ch) {
-          cb(err, post);
+        callback: function(options) {
+          cb(options.err, post);
         }
       };
       tree.store(storeOptions);
