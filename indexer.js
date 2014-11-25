@@ -9,12 +9,14 @@ function TreeDBIndexer(tree) {
   trigger(tree.db, 'content-trigger', function (ch) {
     var key = ch.key;
     if (ch.type === 'put') {
-      var q = {gt: key.concat(null), lt: key.concat(undefined), limit: 1};
-      var parentKey = null;
+      var q = {gt: key.concat(null), lt: key.concat(undefined)};
+      var parentKeys = [];
       self.tree.roots.createReadStream(q).on('data', function(ch) {
-        parentKey = [ch.key[2], ch.key[3]];
+        parentKeys.push([ch.key[2], ch.key[3]]);
       }).on('end', function() {
-        self.putIndexes(ch, parentKey);
+        parentKeys.forEach(function(parentKey) {
+          self.putIndexes(ch, parentKey);
+        });
       });
     }
     else if (ch.type === 'del') self.delIndexes(ch.key);
