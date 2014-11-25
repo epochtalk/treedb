@@ -14,9 +14,14 @@ function TreeDBIndexer(tree) {
       self.tree.roots.createReadStream(q).on('data', function(ch) {
         parentKeys.push([ch.key[2], ch.key[3]]);
       }).on('end', function() {
-        parentKeys.forEach(function(parentKey) {
-          self.putIndexes(ch, parentKey);
-        });
+        if (parentKeys.length > 0) {
+          parentKeys.forEach(function(parentKey) {
+            self.putIndexes(ch, parentKey);
+          });
+        }
+        else {
+          self.putIndexes(ch, null);
+        }
       });
     }
     else if (ch.type === 'del') self.delIndexes(ch.key);
