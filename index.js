@@ -100,7 +100,7 @@ TreeDB.prototype.nodes = function(options) {
   }
 };
 
-// options: parentKey, type, indexedField
+// options: parentKey, type, indexedField, limit, reverse
 TreeDB.prototype.children = function(options) {
   var parentKey = options.parentKey;
   var type = options.type;
@@ -112,6 +112,8 @@ TreeDB.prototype.children = function(options) {
   if (indexedField) {
     var queryKey = ['sec', type, parentKey[0], parentKey[1], indexedField];
     query = {
+      limit: options.limit || undefined,
+      reverse: options.reverse || false,
       gt: queryKey.concat(null),
       lt: queryKey.concat(undefined)
     };
@@ -129,6 +131,8 @@ TreeDB.prototype.children = function(options) {
   }
   else {
     query = {
+      limit: options.limit || undefined,
+      reverse: options.reverse || false,
       gt: parentKey.concat([type, null]),
       lt: parentKey.concat([type, undefined])
     };

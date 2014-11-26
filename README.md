@@ -105,11 +105,14 @@ field to sort by and of the indexed value - `indexValue'
 var rstream = tree.children(options)
 --------------------------------------
 
+// options: parentKey, type, indexedField, limit, reverse
 ````
 options: {
   parentKey: ['type', 'id'],
   type: <'type'>,
-  indexedField: 'field'
+  indexedField: 'field',
+  limit: <Number>,
+  reverse: <Boolean>
 }
 ````
 
