@@ -11,9 +11,10 @@ tree.addIndexes(indexes, start);
 
 var count = 5;
 function start() {
-  test('store', function(t) {
+  test('seed data', function(t) {
     seed(count, function(err) {
-      setTimeout(t.end, 1000);
+      console.log('seed finished');
+      t.end();
     });
   });
   test('query boards by pri index', function(t) {
@@ -30,7 +31,7 @@ function start() {
         );
         lastCreatedAt = board.created_at;
       });
-      // t.equal(boards.length, count, 'board count check');
+      t.equal(boards.length, count, 'board count check');
       t.end();
       tree.teardown();
     });

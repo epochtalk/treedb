@@ -47,10 +47,27 @@ TreeDB.prototype.store = function(options, cb) {
     storeRequests.push(function(cb) { self.branches.batch(cRels, cb); });
     storeRequests.push(function(cb) { self.roots.batch(pRels, cb); });
   }
-  storeRequests.push(function(cb) {
-    self.db.batch(rows, cb);
+  storeRequests.push(function(cb) { self.db.batch(rows, cb); });
+  // indexer
+  var rootsQuery = {gt: key.concat(null), lt: key.concat(undefined)};
+  self.roots.createReadStream(rootsQuery).on('data', function(ch) {
+    parentKeys.push([ch.key[2], ch.key[3]]);
+  }).on('end', function() {
+    if (parentKeys.length > 0) {
+      parentKeys.forEach(function(parentKey) {
+        storeRequests.push(function(cb) {
+          self.indexer.putIndexes({key: key, value: object}, parentKey, cb);
+        });
+      });
+    }
+    else {
+      storeRequests.push(function(cb) {
+        self.indexer.putIndexes({key: key, value: object}, null, cb);
+      });
+    }
+    commit();
   });
-  commit();
+
   function commit() {
     async.parallel(storeRequests, function(err) {
       callback({err: err, key: key, value: object});

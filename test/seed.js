@@ -7,7 +7,6 @@ var tree = require(path.join(__dirname, 'test-treedb'));
 function seedForum(count, cb) {
   var storeRequests = [];
   var boards = genFake('board', count);
-
   boards.forEach(function(board) {
     storeRequests.push(function(cb) {
       var storeOptions = {
