@@ -1,5 +1,6 @@
 var path = require('path');
 var trigger = require('level-trigger');
+var noop = function(){};
 
 var Meta = module.exports = function(tree, stuff) {
   var self = this;
@@ -50,15 +51,16 @@ var Meta = module.exports = function(tree, stuff) {
 };
 
 // options:  key, callback, field
-Meta.prototype.get = function(options) {
+Meta.prototype.get = function(options, cb) {
   var self = this;
   var key = options.key;
+  var callback = cb || noop;
   self.operations.getValue({key: options.key, callback: function(err, value) {
     if (options.field) {
-      options.callback(err, value[options.field]);
+      cb(err, value[options.field]);
     }
     else {
-      options.callback(err, value);
+      cb(err, value);
     }
   }});
 };

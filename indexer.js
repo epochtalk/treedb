@@ -30,12 +30,12 @@ function TreeDBIndexer(tree) {
   function (value, done) { done(); });
 };
 
-// options: {type, parentType, field, callback}
-TreeDBIndexer.prototype.addIndex = function(options) {
+// options: {type, parentType, field}
+TreeDBIndexer.prototype.addIndex = function(options, cb) {
   var type = options.type;
   var parentType = options.parentType || false;
   var field = options.field;
-  var callback = options.callback || noop;
+  var callback = cb || noop;
 
   var self = this;
   var rows = [];

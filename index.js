@@ -26,11 +26,11 @@ function TreeDB(db, opts) {
 };
 
 // options: object, type, parentKeys, [callback]
-TreeDB.prototype.store = function(options) {
+TreeDB.prototype.store = function(options, cb) {
   var object = options.object;
   var type = options.type;
   var parentKeys = options.parentKeys || false;
-  var callback = options.callback || noop;
+  var callback = cb || noop;
   var self = this;
   var rows = [];
   var cRels = [];
@@ -66,6 +66,7 @@ TreeDB.prototype.get = function(key, cb) {
 };
 
 // options: type, limit, (indexedField, (indexedValue))
+// returns stream
 TreeDB.prototype.nodes = function(options) {
   var self = this;
   var type = options.type;
@@ -101,6 +102,7 @@ TreeDB.prototype.nodes = function(options) {
 };
 
 // options: parentKey, type, indexedField, limit, reverse
+// returns stream
 TreeDB.prototype.children = function(options) {
   var parentKey = options.parentKey;
   var type = options.type;
@@ -150,6 +152,7 @@ TreeDB.prototype.children = function(options) {
 };
 
 // options: key, parentType, limit
+// returns stream
 TreeDB.prototype.parents = function(options) {
   var self = this;
   var queryPrefix = [options.key];
@@ -173,22 +176,17 @@ TreeDB.prototype.parents = function(options) {
   })));
 };
 
-// options: {type, parentType, field, callback}
-TreeDB.prototype.addIndex = function(options) {
-  this.indexer.addIndex(options);
-};
-
-// options: {indexes, callback}
-TreeDB.prototype.addIndexes = function(options) {
+// options: {indexes}
+TreeDB.prototype.addIndexes = function(indexes, cb) {
   var self = this;
-  async.each(options.indexes, function(index, callback) {
-    index.callback = callback;
-    self.indexer.addIndex(index);
-  }, options.callback);
+  var callback = cb || noop;
+  async.each(indexes, function(index, cb) {
+    self.indexer.addIndex(index, cb);
+  }, callback);
 };
 
-// options:  key, field, callback
-TreeDB.prototype.metadata = function(options) {
+// options:  key, field
+TreeDB.prototype.metadata = function(options, cb) {
   if (this.metaTreedb) {
     this.metaTreedb.get(options);
   }

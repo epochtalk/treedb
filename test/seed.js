@@ -3,7 +3,6 @@ var async = require('async');
 var path = require('path');
 var gen = require(path.join(__dirname, 'gen'));
 var tree = require(path.join(__dirname, 'test-treedb'));
-
 // count is number of boards/threads/posts
 function seedForum(count, cb) {
   var storeRequests = [];
@@ -13,12 +12,11 @@ function seedForum(count, cb) {
     storeRequests.push(function(cb) {
       var storeOptions = {
         object: board,
-        type: 'board',
-        callback: function(options) {
-          storeThreads(options.key, count, cb);
-        }
+        type: 'board'
       };
-      tree.store(storeOptions);
+      tree.store(storeOptions, function(options) {
+        storeThreads(options.key, count, cb);
+      });
     });
   });
   async.parallel(storeRequests, cb);
@@ -32,12 +30,11 @@ function storeThreads(boardKey, count, cb) {
       var storeOptions = {
         object: thread,
         type: 'thread',
-        parentKeys: [boardKey],
-        callback: function(options) {
-          storePosts(options.key, count, cb);
-        }
+        parentKeys: [boardKey]
       };
-      tree.store(storeOptions);
+      tree.store(storeOptions, function(options) {
+        storePosts(options.key, count, cb);
+      });
     });
   });
   async.parallel(storeRequests, cb);
@@ -51,12 +48,11 @@ function storePosts(threadKey, count, cb) {
       var storeOptions = {
         object: post,
         type: 'post',
-        parentKeys: [threadKey],
-        callback: function(options) {
-          cb(options.err, post);
-        }
+        parentKeys: [threadKey]
       };
-      tree.store(storeOptions);
+      tree.store(storeOptions, function(options) {
+        cb(options.err, post);
+      });
     });
   });
   async.parallel(storeRequests, cb);
