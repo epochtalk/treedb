@@ -48,25 +48,59 @@ TreeDB.prototype.store = function(options, cb) {
     storeRequests.push(function(cb) { self.roots.batch(pRels, cb); });
   }
   storeRequests.push(function(cb) { self.db.batch(rows, cb); });
-  // indexer
-  var rootsQuery = {gt: key.concat(null), lt: key.concat(undefined)};
-  self.roots.createReadStream(rootsQuery).on('data', function(ch) {
-    parentKeys.push([ch.key[2], ch.key[3]]);
-  }).on('end', function() {
-    if (parentKeys.length > 0) {
-      parentKeys.forEach(function(parentKey) {
-        storeRequests.push(function(cb) {
-          self.indexer.putIndexes({key: key, value: object}, parentKey, cb);
-        });
-      });
-    }
-    else {
-      storeRequests.push(function(cb) {
-        self.indexer.putIndexes({key: key, value: object}, null, cb);
-      });
-    }
+
+  var indexAndMetaRequests = [];
+  indexAndMetaRequests.push(persistIndexes);
+  indexAndMetaRequests.push(persistMetadata);
+
+  async.parallel(indexAndMetaRequests, function(err) {
     commit();
   });
+
+  function persistIndexes(cb) {
+    var rootsQuery = {gt: key.concat(null), lt: key.concat(undefined)};
+    self.roots.createReadStream(rootsQuery).on('data', function(ch) {
+      parentKeys.push([ch.key[2], ch.key[3]]);
+    }).on('end', function() {
+      if (parentKeys.length > 0) {
+        parentKeys.forEach(function(parentKey) {
+          storeRequests.push(function(cb) {
+            self.indexer.putIndexes({key: key, value: object}, parentKey, cb);
+          });
+        });
+      }
+      else {
+        storeRequests.push(function(cb) {
+          self.indexer.putIndexes({key: key, value: object}, null, cb);
+        });
+      }
+      cb();
+    });
+  }
+
+  function persistMetadata(cb) {
+    var type = key[0];
+    // If a controller exists for the type
+    if (self.metaTreedb.controllers[type]) {
+      // Create a new metadata for it
+      // using the controller's model
+      var metaValue;
+      if (self.metaTreedb.controllers[type].model) {
+        metaValue = new self.metaTreedb.controllers[type].model();
+        var rows = [];
+        rows.push({type: 'put', key: key, value: metaValue});
+        storeRequests.push(function(cb) {
+          self.meta.batch(rows, cb);
+        });
+      }
+      // Call the onPut for the metadata
+      if (self.metaTreedb.controllers[type].onPut) {
+        // console.log({key: key, value: metaValue});
+        // self.metaTreedb.controllers[type].onPut({key: key, value: metaValue});
+      }
+    }
+    cb();
+  }
 
   function commit() {
     async.parallel(storeRequests, function(err) {
@@ -204,14 +238,7 @@ TreeDB.prototype.addIndexes = function(indexes, cb) {
 
 // options:  key, field
 TreeDB.prototype.metadata = function(options, cb) {
-  if (this.metaTreedb) {
-    this.metaTreedb.get(options);
-  }
-  else {
-    if (options.callback) {
-      options.callback(null);
-    }
-  }
+  this.metaTreedb.get(options, cb);
 };
 
 function noop(){};

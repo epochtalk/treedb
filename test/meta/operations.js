@@ -2,27 +2,29 @@ var path = require('path');
 var vault = require(path.join(__dirname, 'vault'));
 var Operations = module.exports = {};
 var tree;
+var noop = function(){};
 
 Operations.init = function(inputTree) {
   tree = inputTree;
 };
 
 // options: key, callback(parentKey)
-Operations.getParentKey = function(options) {
+Operations.getParentKey = function(options, cb) {
+  var callback = cb || noop;
   var q = {gt: options.key.concat(null), lt: options.key.concat(undefined), limit: 1};
   var parentKey = null;
   tree.roots.createReadStream(q).on('data', function(ch) {
     parentKey = [ch.key[2], ch.key[3]];
   }).on('end', function() {
-    options.callback(parentKey);
+    cb(parentKey);
   });
 };
 
 // options: key, callback(err, value)
-Operations.getValue = function(options) {
+Operations.getValue = function(options, cb) {
   // TODO: createReadStream here
   tree.meta.get(options.key, function(err, value) {
-    options.callback(err, value);
+    cb(err, value);
   });
 };
 
@@ -31,7 +33,7 @@ Operations.updateValue = function(options) {
   var key = options.key;
   var lock = vault.getLock(key);
   lock.runwithlock(function() {
-    Operations.getValue({key: options.key, callback: function(err, value) {
+    Operations.getValue({key: options.key}, function(err, value) {
       options.worker({value: value, callback: function() {
         // Put the new value to the key
         var rows = [];
@@ -45,7 +47,7 @@ Operations.updateValue = function(options) {
               recursiveOptions.locks = [];
             }
             recursiveOptions.locks.push(lock);
-            Operations.getParentKey({key: key, callback: function(parentKey) {
+            Operations.getParentKey({key: key}, function(parentKey) {
               if (parentKey) {
                 recursiveOptions.key = parentKey;
                 Operations.updateValue(recursiveOptions);
@@ -56,7 +58,7 @@ Operations.updateValue = function(options) {
                   lock.release();
                 });
               }
-            }});
+            });
           }
           else {
             // if not recursive, release the lock
@@ -65,7 +67,7 @@ Operations.updateValue = function(options) {
           }
         });
       }});
-    }});
+    });
   });
 };
 
@@ -85,6 +87,7 @@ Operations.decrement = function(options) {
 Operations.add = function(options) {
   options.worker = function(updateOptions) {
     // Add to the value
+    console.log(updateOptions.value);
     updateOptions.value[options.field] += options.increment;
     updateOptions.callback(updateOptions.value);
   };
