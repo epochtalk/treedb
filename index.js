@@ -72,6 +72,9 @@ TreeDB.prototype.nodes = function(options) {
   var query;
   if (options && options.indexedField) {
     var queryPrefix = ['pri', type, options.indexedField];
+    if (options.agnostic) {
+      queryPrefix = ['ter', type, options.indexedField];
+    }
     if (options.indexedValue) {
       queryPrefix = queryPrefix.concat(options.indexedValue);
     }
