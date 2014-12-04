@@ -15,13 +15,11 @@ TreeDBIndexer.prototype.storeIndexes = function(ch, cb) {
   self.tree.roots.createReadStream(q).on('data', function(ch) {
     parentKeys.push([ch.key[2], ch.key[3]]);
   }).on('end', function() {
-    if (parentKeys.length > 0) {
+    if (parentKeys.length === 0) self.putIndexes(ch, null, cb);
+    else {
       parentKeys.forEach(function(parentKey) {
         self.putIndexes(ch, parentKey, cb);
       });
-    }
-    else {
-      self.putIndexes(ch, null, cb);
     }
   });
 };

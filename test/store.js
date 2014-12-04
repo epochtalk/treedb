@@ -10,11 +10,13 @@ var indexes = require(path.join(__dirname, 'sample_indexes'));
 
 tree.addIndexes({indexes: indexes}, start);
 
-var count = 3;
+var count = 5;
 function start() {
   test('store', function(t) {
     seed(count, function(err) {
-      setTimeout(t.end, 1000);
+      // setTimeout(t.end, 1000);
+      console.log('Seeded with count: ' + count);
+      t.end();
     });
   });
   test('query boards by pri index', function(t) {
