@@ -87,7 +87,6 @@ Operations.decrement = function(options) {
 Operations.add = function(options) {
   options.worker = function(updateOptions) {
     // Add to the value
-    console.log(updateOptions.value);
     updateOptions.value[options.field] += options.increment;
     updateOptions.callback(updateOptions.value);
   };

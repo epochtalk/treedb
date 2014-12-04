@@ -6,8 +6,7 @@ var readonly = require('read-only-stream');
 var defined = require('defined');
 var async = require('async');
 var through2 = require('through2');
-var TreeDBIndexer = require(path.join(__dirname, 'indexer'));
-var TreeDBMeta = require(path.join(__dirname, 'meta'));
+var Indexer = require(path.join(__dirname, 'indexer'));
 var keys = require(path.join(__dirname, 'keys'));
 
 function TreeDB(db, opts) {
@@ -19,92 +18,30 @@ function TreeDB(db, opts) {
   this.indexes = this.db.sublevel('indexes');
   this.indexed = this.db.sublevel('indexed');
   this.meta = this.db.sublevel('meta');
-  this.indexer = new TreeDBIndexer(this);
-  if (opts.meta) {
-    this.metaTreedb = new TreeDBMeta(this, opts.meta);
-  }
+  this.indexer = new Indexer(this);
 };
 
 // options: object, type, parentKeys, [callback]
-TreeDB.prototype.store = function(options, cb) {
-  var object = options.object;
-  var type = options.type;
-  var parentKeys = options.parentKeys || false;
-  var callback = cb || noop;
+TreeDB.prototype.store = function(opts, cb) {
   var self = this;
-  var rows = [];
-  var cRels = [];
-  var pRels = [];
-  var key = [type, keys.hash()];
-  rows.push({type: 'put', key: key, value: object});
-  var storeRequests = [];
-  if (parentKeys) {
-    parentKeys.forEach(function(parentKey) {
-      // assumes parent already has been saved in the database
-      cRels.push({type: 'put', key: parentKey.concat(key), value: 0});
-      pRels.push({type: 'put', key: key.concat(parentKey), value: 0});
+  var callback = cb || noop;
+  var key = [opts.type, keys.hash()];
+  opts.key = key;
+  var dbRows = [], cRows = [], pRows = [], storeRequests = [];
+  dbRows.push({type: 'put', key: key, value: opts.object});
+  if (opts.parentKeys) {
+    opts.parentKeys.forEach(function(parentKey) {
+      cRows.push({type: 'put', key: parentKey.concat(key), value: 0});
+      pRows.push({type: 'put', key: key.concat(parentKey), value: 0});
     });
-    storeRequests.push(function(cb) { self.branches.batch(cRels, cb); });
-    storeRequests.push(function(cb) { self.roots.batch(pRels, cb); });
+    storeRequests.push(function(cb) { self.branches.batch(cRows, cb); });
+    storeRequests.push(function(cb) { self.roots.batch(cRows, cb); });
   }
-  storeRequests.push(function(cb) { self.db.batch(rows, cb); });
-
-  var indexAndMetaRequests = [];
-  indexAndMetaRequests.push(persistIndexes);
-  indexAndMetaRequests.push(persistMetadata);
-
-  async.parallel(indexAndMetaRequests, function(err) {
-    commit();
-  });
-
-  function persistIndexes(cb) {
-    var rootsQuery = {gt: key.concat(null), lt: key.concat(undefined)};
-    self.roots.createReadStream(rootsQuery).on('data', function(ch) {
-      parentKeys.push([ch.key[2], ch.key[3]]);
-    }).on('end', function() {
-      if (parentKeys.length > 0) {
-        parentKeys.forEach(function(parentKey) {
-          storeRequests.push(function(cb) {
-            self.indexer.putIndexes({key: key, value: object}, parentKey, cb);
-          });
-        });
-      }
-      else {
-        storeRequests.push(function(cb) {
-          self.indexer.putIndexes({key: key, value: object}, null, cb);
-        });
-      }
-      cb();
-    });
-  }
-
-  function persistMetadata(cb) {
-    var type = key[0];
-    // If a controller exists for the type
-    if (self.metaTreedb.controllers[type]) {
-      // Create a new metadata for it
-      // using the controller's model
-      var metaValue;
-      if (self.metaTreedb.controllers[type].model) {
-        metaValue = new self.metaTreedb.controllers[type].model();
-        var rows = [];
-        rows.push({type: 'put', key: key, value: metaValue});
-        storeRequests.push(function(cb) {
-          self.meta.batch(rows, cb);
-        });
-      }
-      // Call the onPut for the metadata
-      if (self.metaTreedb.controllers[type].onPut) {
-        // console.log({key: key, value: metaValue});
-        // self.metaTreedb.controllers[type].onPut({key: key, value: metaValue});
-      }
-    }
-    cb();
-  }
-
+  storeRequests.push(function(cb) { self.db.batch(dbRows, cb); });
+  self.indexer.storeIndexes(opts, commit);
   function commit() {
     async.parallel(storeRequests, function(err) {
-      callback({err: err, key: key, value: object});
+      callback({err: err, key: key, value: opts.object});
     });
   };
 };

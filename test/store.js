@@ -9,7 +9,7 @@ var indexes = require(path.join(__dirname, 'sample_indexes'));
 
 tree.addIndexes(indexes, start);
 
-var count = 5;
+var count = 1;
 function start() {
   test('seed data', function(t) {
     seed(count, function(err) {

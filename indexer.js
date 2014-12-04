@@ -1,5 +1,7 @@
 module.exports = TreeDBIndexer;
+var path = require('path');
 var async = require('async');
+var keys = require(path.join(__dirname, 'keys'));
 
 function TreeDBIndexer(tree) {
   if (!(this instanceof TreeDBIndexer)) return new TreeDBIndexer(tree);
@@ -7,6 +9,29 @@ function TreeDBIndexer(tree) {
   self.tree = tree;
 };
 
+TreeDBIndexer.prototype.storeIndexes = function(opts, cb) {
+  var self = this;
+  var storeRequests = [], parentKeys = [];
+  var key = opts.key, value = opts.object;
+  var rootsQuery = {gt: key.concat(null), lt: key.concat(undefined)};
+  self.tree.roots.createReadStream(rootsQuery).on('data', function(ch) {
+    parentKeys.push([ch.key[2], ch.key[3]]);
+  }).on('end', function() {
+    if (parentKeys.length > 0) {
+      parentKeys.forEach(function(parentKey) {
+        storeRequests.push(function(cb) {
+          self.putIndexes({key: key, value: value}, parentKey, cb);
+        });
+      });
+    }
+    else {
+      storeRequests.push(function(cb) {
+        self.putIndexes({key: key, value: value}, null, cb);
+      });
+    }
+    async.parallel(storeRequests, cb);
+  });
+}
 // options: {type, parentType, field, callback}
 TreeDBIndexer.prototype.addIndex = function(options, cb) {
   var type = options.type;
@@ -34,6 +59,8 @@ TreeDBIndexer.prototype.delIndexes = function(key) {
 };
 
 TreeDBIndexer.prototype.putIndexes = function(ch, parentKey, cb) {
+  console.log('parentKey');
+  console.log(parentKey);
   if (!cb) cb = noop;
   var self = this;
   var rows = [];
