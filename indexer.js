@@ -1,33 +1,29 @@
 module.exports = TreeDBIndexer;
-var trigger = require('level-trigger');
 var async = require('async');
 
 function TreeDBIndexer(tree) {
   if (!(this instanceof TreeDBIndexer)) return new TreeDBIndexer(tree);
   var self = this;
   self.tree = tree;
-  trigger(tree.db, 'content-trigger', function (ch) {
-    var key = ch.key;
-    if (ch.type === 'put') {
-      var q = {gt: key.concat(null), lt: key.concat(undefined)};
-      var parentKeys = [];
-      self.tree.roots.createReadStream(q).on('data', function(ch) {
-        parentKeys.push([ch.key[2], ch.key[3]]);
-      }).on('end', function() {
-        if (parentKeys.length > 0) {
-          parentKeys.forEach(function(parentKey) {
-            self.putIndexes(ch, parentKey);
-          });
-        }
-        else {
-          self.putIndexes(ch, null);
-        }
+};
+
+TreeDBIndexer.prototype.storeIndexes = function(ch, cb) {
+  var self = this;
+  var key = ch.key;
+  var q = {gt: key.concat(null), lt: key.concat(undefined)};
+  var parentKeys = [];
+  self.tree.roots.createReadStream(q).on('data', function(ch) {
+    parentKeys.push([ch.key[2], ch.key[3]]);
+  }).on('end', function() {
+    if (parentKeys.length > 0) {
+      parentKeys.forEach(function(parentKey) {
+        self.putIndexes(ch, parentKey, cb);
       });
     }
-    else if (ch.type === 'del') self.delIndexes(ch.key);
-    return ch.key;
-  },
-  function (value, done) { done(); });
+    else {
+      self.putIndexes(ch, null, cb);
+    }
+  });
 };
 
 // options: {type, parentType, field, callback}

@@ -6,7 +6,7 @@ var readonly = require('read-only-stream');
 var defined = require('defined');
 var async = require('async');
 var through2 = require('through2');
-// var TreeDBIndexer = require(path.join(__dirname, 'indexer'));
+var TreeDBIndexer = require(path.join(__dirname, 'indexer'));
 // var TreeDBMeta = require(path.join(__dirname, 'meta'));
 var keys = require(path.join(__dirname, 'keys'));
 
@@ -19,7 +19,7 @@ function TreeDB(db, opts) {
   this.indexes = this.db.sublevel('indexes');
   this.indexed = this.db.sublevel('indexed');
   this.meta = this.db.sublevel('meta');
-  // this.indexer = new TreeDBIndexer(this);
+  this.indexer = new TreeDBIndexer(this);
   // if (opts.meta) {
   //   this.metaTreedb = new TreeDBMeta(this, opts.meta);
   // }
@@ -27,14 +27,12 @@ function TreeDB(db, opts) {
 
 // options: object, type, parentKeys, [callback]
 TreeDB.prototype.store = function(options) {
+  var self = this;
   var object = options.object;
   var type = options.type;
   var parentKeys = options.parentKeys || false;
   var callback = options.callback || noop;
-  var self = this;
-  var rows = [];
-  var cRels = [];
-  var pRels = [];
+  var rows = [], cRels = [], pRels = [];
   var key = [type, keys.hash()];
   rows.push({type: 'put', key: key, value: object});
   var storeRequests = [];
@@ -53,7 +51,9 @@ TreeDB.prototype.store = function(options) {
   commit();
   function commit() {
     async.parallel(storeRequests, function(err) {
-      callback({err: err, key: key, value: object});
+      self.indexer.storeIndexes({key: key, value: object}, function(err) {
+        callback({err: err, key: key, value: object});
+      });
     });
   };
 };
@@ -179,12 +179,17 @@ TreeDB.prototype.addIndex = function(options) {
 };
 
 // options: {indexes, callback}
-TreeDB.prototype.addIndexes = function(options) {
+TreeDB.prototype.addIndexes = function(options, cb) {
   var self = this;
-  async.each(options.indexes, function(index, callback) {
-    index.callback = callback;
-    self.indexer.addIndex(index);
-  }, options.callback);
+  if (self.indexer) {
+    async.each(options.indexes, function(index, callback) {
+      index.callback = callback;
+      self.indexer.addIndex(index);
+    }, cb);
+  }
+  else {
+    cb();
+  }
 };
 
 // options:  key, field, callback
