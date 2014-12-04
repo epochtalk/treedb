@@ -7,7 +7,7 @@ function TreeDBIndexer(tree) {
   self.tree = tree;
 };
 
-TreeDBIndexer.prototype.storeIndexes = function(ch, cb) {
+TreeDBIndexer.prototype.store = function(ch, cb) {
   var self = this;
   var key = ch.key;
   var q = {gt: key.concat(null), lt: key.concat(undefined)};

@@ -1,5 +1,4 @@
 var path = require('path');
-var trigger = require('level-trigger');
 
 var Meta = module.exports = function(tree, stuff) {
   var self = this;
@@ -7,47 +6,48 @@ var Meta = module.exports = function(tree, stuff) {
   self.operations = stuff.operations;
   self.operations.init(tree);
   self.controllers = stuff.controllers;
-  trigger(tree.db, 'metadata-trigger', function(ch) {
-    var key = ch.key;
-    if (ch.type === 'put') {
-      // Get the type
-      var type = key[0];
-      // If a controller exists for the type
-      if (self.controllers[type]) {
-        // Create a new metadata for it
-        // using the controller's model
-        if (self.controllers[type].model) {
-          var value = new self.controllers[type].model();
-          var rows = [];
-          rows.push({type: 'put', key: key, value: value});
-          self.tree.meta.batch(rows);
-        }
-        // Call the onPut for the metadata
-        if (self.controllers[type].onPut) {
-          self.controllers[type].onPut({key: key, value: value});
-        }
-      };
-    }
-    else if (ch.type === 'del') {
-      // Get the type
-      var type = key[0];
-      // If a controller exists for the type
-      if (self.controllers[type]) {
-        // Delete the metadata for it
-        if (self.controllers[type].model) {
-          var rows = [];
-          rows.push({type: 'del', key: key});
-          self.tree.meta.batch(rows);
-        }
-        // Call the onDel for the metadata
-        if (self.controllers[type].onDel) {
-          self.controllers[type].onDel(key);
-        }
-      };
-    }
-    return ch.key;
-  }, function(value, done) { done(); });
+  //   else if (ch.type === 'del') {
+  //     // Get the type
+  //     var type = key[0];
+  //     // If a controller exists for the type
+  //     if (self.controllers[type]) {
+  //       // Delete the metadata for it
+  //       if (self.controllers[type].model) {
+  //         var rows = [];
+  //         rows.push({type: 'del', key: key});
+  //         self.tree.meta.batch(rows);
+  //       }
+  //       // Call the onDel for the metadata
+  //       if (self.controllers[type].onDel) {
+  //         self.controllers[type].onDel(key);
+  //       }
+  //     };
+  //   }
 };
+Meta.prototype.store = function(ch, cb) {
+  var self = this;
+  var key = ch.key;
+  // Get the type
+  var type = key[0];
+  // If a controller exists for the type
+  if (self.controllers[type]) {
+    // Create a new metadata for it
+    // using the controller's model
+    if (self.controllers[type].model) {
+      var value = new self.controllers[type].model();
+      var rows = [];
+      rows.push({type: 'put', key: key, value: value});
+      self.tree.meta.batch(rows, cb);
+    }
+    else {
+      cb();
+    }
+    // Call the onPut for the metadata
+    if (self.controllers[type].onPut) {
+      self.controllers[type].onPut({key: key, value: value});
+    }
+  };
+}
 
 // options:  key, callback, field
 Meta.prototype.get = function(options) {

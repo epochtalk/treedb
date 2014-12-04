@@ -7,7 +7,7 @@ var defined = require('defined');
 var async = require('async');
 var through2 = require('through2');
 var TreeDBIndexer = require(path.join(__dirname, 'indexer'));
-// var TreeDBMeta = require(path.join(__dirname, 'meta'));
+var TreeDBMeta = require(path.join(__dirname, 'meta'));
 var keys = require(path.join(__dirname, 'keys'));
 
 function TreeDB(db, opts) {
@@ -20,9 +20,9 @@ function TreeDB(db, opts) {
   this.indexed = this.db.sublevel('indexed');
   this.meta = this.db.sublevel('meta');
   this.indexer = new TreeDBIndexer(this);
-  // if (opts.meta) {
-  //   this.metaTreedb = new TreeDBMeta(this, opts.meta);
-  // }
+  if (opts.meta) {
+    this.metaTreedb = new TreeDBMeta(this, opts.meta);
+  }
 };
 
 // options: object, type, parentKeys, [callback]
@@ -51,8 +51,10 @@ TreeDB.prototype.store = function(options) {
   commit();
   function commit() {
     async.parallel(storeRequests, function(err) {
-      self.indexer.storeIndexes({key: key, value: object}, function(err) {
-        callback({err: err, key: key, value: object});
+      self.indexer.store({key: key, value: object}, function(err) {
+        self.metaTreedb.store({key: key, value: object}, function(err) {
+          callback({err: err, key: key, value: object});
+        });
       });
     });
   };
