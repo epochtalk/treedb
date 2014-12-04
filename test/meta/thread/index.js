@@ -7,7 +7,8 @@ module.exports = {
       Operations.increment({
         key: parentKey,
         field: 'thread_count',
-        recursive: true
+        recursive: true,
+        callback: options.callback
       });
     }});
   },

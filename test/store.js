@@ -15,8 +15,7 @@ function start() {
   test('store', function(t) {
     seed(count, function(err) {
       console.log('Seeded with count: ' + count);
-      setTimeout(t.end, 1000);
-      // t.end();
+      t.end();
     });
   });
   test('query boards by pri index', function(t) {
@@ -37,7 +36,6 @@ function start() {
       });
       t.equal(boards.length, count, 'board count check');
       t.end();
-      teardown();
     });
   });
   test('query threads by sec index', function(t) {

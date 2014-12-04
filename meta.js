@@ -1,4 +1,5 @@
 var path = require('path');
+var async = require('async');
 
 var Meta = module.exports = function(tree, stuff) {
   var self = this;
@@ -27,6 +28,7 @@ var Meta = module.exports = function(tree, stuff) {
 Meta.prototype.store = function(ch, cb) {
   var self = this;
   var key = ch.key;
+  var storeRequests = [];
   // Get the type
   var type = key[0];
   // If a controller exists for the type
@@ -37,16 +39,21 @@ Meta.prototype.store = function(ch, cb) {
       var value = new self.controllers[type].model();
       var rows = [];
       rows.push({type: 'put', key: key, value: value});
-      self.tree.meta.batch(rows, cb);
+      storeRequests.push(function(cb) {
+        self.tree.meta.batch(rows, cb);
+      });
     }
-    else {
-      cb();
-    }
+    // else {
+    //   cb();
+    // }
     // Call the onPut for the metadata
     if (self.controllers[type].onPut) {
-      self.controllers[type].onPut({key: key, value: value});
+      storeRequests.push(function(cb) {
+        self.controllers[type].onPut({key: key, value: value, callback: cb});
+      });
     }
   };
+  async.parallel(storeRequests, cb);
 }
 
 // options:  key, callback, field

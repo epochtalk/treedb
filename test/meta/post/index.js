@@ -13,7 +13,8 @@ module.exports = {
       Operations.increment({
         key: parentKey,
         field: 'post_count',
-        recursive: true
+        recursive: true,
+        callback: options.callback
       });
     }});
   },

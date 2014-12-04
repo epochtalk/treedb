@@ -55,6 +55,7 @@ Operations.updateValue = function(options) {
                 recursiveOptions.locks.forEach(function(lock) {
                   lock.release();
                 });
+                options.callback();
               }
             }});
           }
@@ -62,6 +63,7 @@ Operations.updateValue = function(options) {
             // if not recursive, release the lock
             // there is no parent or child
             lock.release();
+            options.callback();
           }
         });
       }});
