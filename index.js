@@ -6,8 +6,8 @@ var readonly = require('read-only-stream');
 var defined = require('defined');
 var async = require('async');
 var through2 = require('through2');
-var TreeDBIndexer = require(path.join(__dirname, 'indexer'));
-var TreeDBMeta = require(path.join(__dirname, 'meta'));
+// var TreeDBIndexer = require(path.join(__dirname, 'indexer'));
+// var TreeDBMeta = require(path.join(__dirname, 'meta'));
 var keys = require(path.join(__dirname, 'keys'));
 
 function TreeDB(db, opts) {
@@ -19,10 +19,10 @@ function TreeDB(db, opts) {
   this.indexes = this.db.sublevel('indexes');
   this.indexed = this.db.sublevel('indexed');
   this.meta = this.db.sublevel('meta');
-  this.indexer = new TreeDBIndexer(this);
-  if (opts.meta) {
-    this.metaTreedb = new TreeDBMeta(this, opts.meta);
-  }
+  // this.indexer = new TreeDBIndexer(this);
+  // if (opts.meta) {
+  //   this.metaTreedb = new TreeDBMeta(this, opts.meta);
+  // }
 };
 
 // options: object, type, parentKeys, [callback]
