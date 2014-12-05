@@ -106,12 +106,14 @@ TreeDBIndexer.prototype.indexesOf = function(key, cb) {
   var type = key[0];
   var priQuery = {gt: ['pri', type, null], lt: ['pri', type, undefined]};
   var secQuery = {gt: ['sec', type, null], lt: ['sec', type, undefined]};
+  var agnQuery = {gt: ['agn', type, null], lt: ['agn', type, undefined]};
   // example: [ 'pri', 'board', 'created_at' ]
   async.parallel([
     function(cb) { self.indexQuery(priQuery, cb); },
-    function(cb) { self.indexQuery(secQuery, cb); }
+    function(cb) { self.indexQuery(secQuery, cb); },
+    function(cb) { self.indexQuery(agnQuery, cb); }
   ], function(err, results) {
-    var indexes = results[0].concat(results[1]);
+    var indexes = results[0].concat(results[1], results[2]);
     return cb(err, indexes);
   });
 };
