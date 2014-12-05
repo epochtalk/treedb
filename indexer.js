@@ -28,6 +28,7 @@ TreeDBIndexer.prototype.store = function(ch, cb) {
 TreeDBIndexer.prototype.addIndex = function(options) {
   var type = options.type;
   var parentType = options.parentType || false;
+  var agnostic = options.agnostic || false;
   var field = options.field;
   var callback = options.callback || noop;
 
@@ -36,6 +37,9 @@ TreeDBIndexer.prototype.addIndex = function(options) {
   var key = ['pri', type, field];
   if (parentType) {
     key = ['sec', type, parentType, field];
+  }
+  else if (agnostic) {
+    key = ['agn', type, field];
   }
   rows.push({type: 'put', key: key, value: 0});
   var storeRequests = [];
