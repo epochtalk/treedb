@@ -66,17 +66,19 @@ TreeDBIndexer.prototype.putIndexes = function(ch, parentKey, cb) {
   self.indexesOf(key, function(err, indexes) {
     indexes.forEach(function(index) {
       // gets all primary/secondary indexes
-      var indexedField = index.key[index.key.length - 1];
-      var indexedKey = index.key.concat([val[indexedField], id]);
-      if (index.key[0] === 'sec') {
-        indexedKey = index.key.concat([val[indexedField], id]);
-        indexedKey.splice(3, 0, parentKey[1]);
+      var indexedField = index.key[index.key.length - 1].split('.');
+      var indexedValue = getIndexedValue(indexedField, val);
+      if (indexedValue) {
+        var indexedKey = index.key.concat([indexedValue, id]);
+        if (index.key[0] === 'sec') {
+          indexedKey.splice(3, 0, parentKey[1]);
+        }
+        // ['pri', 'board', 'created_at', 1381891311050, '-y_Jrwa1B']
+        // ['sec', 'thread', 'board', 'Wk-hvQmvHr', 'updated_at', 1415323275770,
+        // 'ZJc6RZ48Hr']
+        var row = {type: 'put', key: indexedKey, value: 0};
+        rows.push(row);
       }
-      // ['pri', 'board', 'created_at', 1381891311050, '-y_Jrwa1B']
-      // ['sec', 'thread', 'board', 'Wk-hvQmvHr', 'updated_at', 1415323275770,
-      // 'ZJc6RZ48Hr']
-      var row = {type: 'put', key: indexedKey, value: 0};
-      rows.push(row);
     });
 
     storeRequests.push(function(cb) { self.tree.indexed.batch(rows, cb); });
@@ -116,3 +118,20 @@ TreeDBIndexer.prototype.indexesOf = function(key, cb) {
 
 function noop(){};
 
+function getIndexedValue(arr, obj) {
+  var result = obj;
+  var successful = arr.every(function(field, index, array){
+    if (arr[0] === 'smf') {
+    }
+    if (result[field]) {
+      result = result[field];
+      return true;
+    }
+    else {
+      return false;
+    }
+  });
+  if (successful) {
+    return result;
+  }
+};
