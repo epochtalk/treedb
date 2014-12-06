@@ -17,9 +17,15 @@ TreeDBIndexer.prototype.store = function(ch, cb) {
   }).on('end', function() {
     if (parentKeys.length === 0) self.putIndexes(ch, null, cb);
     else {
-      parentKeys.forEach(function(parentKey) {
-        self.putIndexes(ch, parentKey, cb);
-      });
+      async.map(
+        parentKeys,
+        function(parentKey, asyncCb) {
+          self.putIndexes(ch, parentKey, asyncCb);
+        },
+        function(err, results) {
+          cb(err, results);
+        }
+      );
     }
   });
 };
