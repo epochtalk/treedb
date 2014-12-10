@@ -38,10 +38,10 @@ TreeDB.prototype.store = function(options) {
   var key = [type];
   if (id) {
     // allow supply of id
-    key.concat(id);
+    key.push(id);
   }
   else {
-    key.concat(keys.hash());
+    key.push(keys.hash());
   }
   rows.push({type: 'put', key: key, value: object});
   var storeRequests = [];
