@@ -28,12 +28,21 @@ function TreeDB(db, opts) {
 // options: object, type, parentKeys, [callback]
 TreeDB.prototype.store = function(options) {
   var self = this;
+  var id = options.id;
+  var update = options.update;
   var object = options.object;
   var type = options.type;
   var parentKeys = options.parentKeys || false;
   var callback = options.callback || noop;
   var rows = [], cRels = [], pRels = [];
-  var key = [type, keys.hash()];
+  var key = [type];
+  if (id) {
+    // allow supply of id
+    key.concat(id);
+  }
+  else {
+    key.concat(keys.hash());
+  }
   rows.push({type: 'put', key: key, value: object});
   var storeRequests = [];
   if (parentKeys) {
@@ -51,10 +60,15 @@ TreeDB.prototype.store = function(options) {
   commit();
   function commit() {
     async.parallel(storeRequests, function(err) {
-      self.indexer.store({key: key, value: object}, function(err) {
-        self.metaTreedb.store({key: key, value: object}, function(err) {
-          callback({err: err, key: key, value: object});
-        });
+      self.indexer.store({key: key, value: object}, function(err, results) {
+        if (err) {
+          callback({err: err});
+        }
+        else {
+          self.metaTreedb.store({key: key, value: object, update: update}, function(err) {
+            callback({err: err, key: key, value: object});
+          });
+        }
       });
     });
   };
