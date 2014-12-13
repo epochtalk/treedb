@@ -129,8 +129,6 @@ function noop(){};
 function getIndexedValue(arr, obj) {
   var result = obj;
   var successful = arr.every(function(field, index, array){
-    if (arr[0] === 'smf') {
-    }
     if (result[field]) {
       result = result[field];
       return true;
